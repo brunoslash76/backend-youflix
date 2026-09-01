@@ -17,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
       ]),
       ignoreExpiration: false,
-      secretOrKey: JWT_SECRET
+      secretOrKey: JWT_SECRET,
     })
   }
 

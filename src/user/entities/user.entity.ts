@@ -17,6 +17,12 @@ export class User {
   @Column({ default: false })
   isAdmin: boolean;
 
+  @Column({ default: false })
+  isActive: boolean;
+
+  @Column({ nullable: true, default: null })
+  refreshToken: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

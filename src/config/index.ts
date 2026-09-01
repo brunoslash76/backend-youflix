@@ -11,31 +11,38 @@ export interface CONFIG  {
   },
   jwt: {
     secret: string | undefined
+    refreshTokenSecret: string | undefined
+    accessTokenExpiresIn: number | undefined
+    refreshTokenExpiresIn: number | undefined
   },
   cookie: {
     secret: string | undefined
   },
 } 
 
-const checkEnvVarAvailability = (varName: string | undefined) => {
-  if (!varName) throw new InternalServerErrorException(`${varName} environment variable is not set`);
-  return varName;
+const checkEnvVarAvailability = (name: string) => {
+  const value = process.env[name];
+  if (!value) throw new InternalServerErrorException(`${name} environment variable is not set`);
+  return value;
 }
 
 export const config: CONFIG = {
   database: {
-    url: checkEnvVarAvailability(process.env.DATABASE_URL as string),
-    user: checkEnvVarAvailability(process.env.POSTGRES_USER as string),
-    password: checkEnvVarAvailability(process.env.POSTGRES_PASSWORD as string),
-    port: +checkEnvVarAvailability(process.env.POSTGRES_PORT as string),
-    host: checkEnvVarAvailability(process.env.POSTGRES_HOST as string),
-    name: checkEnvVarAvailability(process.env.POSTGRES_DB as string),
+    url: process.env.DATABASE_URL ?? checkEnvVarAvailability('POSTGRES_URL'),
+    user: checkEnvVarAvailability('POSTGRES_USER'),
+    password: checkEnvVarAvailability('POSTGRES_PASSWORD'),
+    port: +checkEnvVarAvailability('POSTGRES_PORT'),
+    host: checkEnvVarAvailability('POSTGRES_HOST'),
+    name: checkEnvVarAvailability('POSTGRES_DB'),
   },
   jwt: {
-    secret: checkEnvVarAvailability(process.env.JWT_SECRET as string),
+    secret: checkEnvVarAvailability('JWT_SECRET'),
+    refreshTokenSecret: checkEnvVarAvailability('REFRESH_TOKEN_SECRET'),
+    accessTokenExpiresIn: 15,
+    refreshTokenExpiresIn: 7 * 24 * 60 * 60,
   },
   cookie: {
-    secret: checkEnvVarAvailability(process.env.COOKIE_SECRET as string),
+    secret: checkEnvVarAvailability('COOKIE_SECRET'),
   },
 }
 

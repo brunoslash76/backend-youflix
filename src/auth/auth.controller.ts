@@ -1,11 +1,20 @@
-import { Controller } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { PublicRoute } from "../decorators/public-route.decorator.js";
+import { AuthService } from "./auth.service.js";
+import { RegisterDto } from "./dto/register.dto.js";
 
 @Controller('auth')
 export class AuthController {
-  constructor(private jwtService: JwtService) { }
+  constructor(private authService: AuthService) { }
 
-  async validateUser(email: string, password: string): Promise<any> {
-    
+  @Get('health')
+  @PublicRoute()
+  async health() {
+    return { status: 'ok' };
+  }
+  @Post('register')
+  @PublicRoute()
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 }

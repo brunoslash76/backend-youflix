@@ -4,11 +4,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { config } from '../src/config/index.js';
+import { config } from './config';
 import { AppModule, ObserveInstrument } from './app.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 
 const COOKIE_SECRET = config.cookie.secret;
+const PORT = Number(process.env.PORT ?? 3000);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
@@ -19,7 +20,7 @@ async function bootstrap() {
     secret: COOKIE_SECRET,
   })
 
-  app.register(helmet, {
+  await app.register(helmet, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: [`'self'`],
@@ -35,17 +36,19 @@ async function bootstrap() {
   const reflector = app.get(Reflector)
   app.useGlobalGuards(new JwtAuthGuard(reflector))
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('YouFlix API')
     .setDescription('API for YouFlix')
     .setVersion('1.0')
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api', app, documentFactory())
+  const document = SwaggerModule.createDocument(app, swaggerConfig)
+  SwaggerModule.setup('api', app, document)
 
-  await app.listen(process.env.PORT ?? 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT ?? 3000}`);
-  });
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`Server is running on port ${PORT}`);
 }
-await bootstrap();
+void bootstrap().catch((error) => {
+  console.error('Failed to start server: ', error);
+  process.exit(1);
+});
