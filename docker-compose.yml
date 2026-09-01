@@ -18,9 +18,11 @@ services:
       start_period: 10s
       timeout: 5s
       retries: 5
-  
+    networks: 
+    - app-network
   # --- APPLICATION SERVICE ---
-  app: 
+  app:
+    command: npm run start:dev
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -28,6 +30,7 @@ services:
     restart: always
     ports:
       - "3000:3000"
+      - "9229:9229"
     env_file:
       - .env
     environment:
@@ -38,10 +41,36 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+    networks:
+    - app-network
+
+  # --- REDIS ---
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-rootpassword}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-rootpassword}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+    - app-network
 
 volumes:
+  redis_data:
   postgres_data:
     driver: local
+
+networks:
+  app-network:
+    driver: bridge
