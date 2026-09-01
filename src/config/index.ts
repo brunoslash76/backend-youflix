@@ -18,6 +18,17 @@ export interface CONFIG  {
   cookie: {
     secret: string | undefined
   },
+  mailgun: {
+    apiKey: string | undefined
+    baseUrl: string | undefined
+    domain: string | undefined
+  },
+  frontendUrl: string | undefined,
+  redis: {
+    host: string | undefined
+    port: number | undefined
+    password: string | undefined
+  }
 } 
 
 const checkEnvVarAvailability = (name: string) => {
@@ -44,5 +55,15 @@ export const config: CONFIG = {
   cookie: {
     secret: checkEnvVarAvailability('COOKIE_SECRET'),
   },
+  mailgun: {
+    apiKey: checkEnvVarAvailability('MAILGUN_API_KEY'),
+    baseUrl: checkEnvVarAvailability('MAILGUN_BASE_URL'),
+    domain: checkEnvVarAvailability('MAILGUN_DOMAIN'),
+  },
+  frontendUrl: checkEnvVarAvailability('FRONTEND_URL'),
+  redis: {
+    host: checkEnvVarAvailability('REDIS_HOST'),
+    port: +checkEnvVarAvailability('REDIS_PORT'),
+    password: checkEnvVarAvailability('REDIS_PASSWORD'),
+  },
 }
-
