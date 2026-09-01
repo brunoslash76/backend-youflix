@@ -28,13 +28,13 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(2)
   @MaxLength(255)
   firstName: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(8)
+  @MinLength(2)
   @MaxLength(255)
   lastName: string;
 }

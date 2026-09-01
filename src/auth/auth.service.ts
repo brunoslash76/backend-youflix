@@ -19,31 +19,38 @@ export class AuthService {
     private tokensRepository: Repository<Tokens>
   ) { }
 
-  async register(registerDto: RegisterDto): Promise<Omit<User, 'password'>> {
+  async register(registerDto: RegisterDto): Promise<{ success: boolean }> {
     try {
       const existingUser = await this.usersRepository.findOneBy({ email: registerDto.email, phone: registerDto.phone });
 
       if (existingUser) throw new Error('User already exists')
 
+      if (registerDto.password !== registerDto.passwordConfirmation) throw new Error('Passwords do not match');
+
       const encryptedPassword = await bcrypt.hash(registerDto.password, 10);
       const newUser = this.usersRepository.create({ ...registerDto, password: encryptedPassword });
       // TODO: Add email verification here or SMS verification
-      return await this.usersRepository.save(newUser);
+      await this.usersRepository.save(newUser);
+      return { success: true }
     } catch (error: unknown) {
+      if (error instanceof Error) throw new Error(error.message);
       if (error instanceof InternalServerErrorException) throw error;
+      console.error(String(error));
       throw new InternalServerErrorException('An error occurred while registering the user');
     }
   }
 
   async login(credentials: { email: string, password: string }, reply: FastifyReply): Promise<Omit<User, 'password' | 'refreshToken'>> {
     try {
-      const user = await this.usersRepository.findOneByOrFail({ email: credentials.email });
+      const user = await this.usersRepository.findOne({ where: { email: credentials.email } });
 
       const message = 'User credentials are incorrect';
 
       if (!user) throw new UnauthorizedException(message);
 
-      if (!(await bcrypt.compare(credentials.password, user.password))) throw new UnauthorizedException(message);
+      const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+
+      if (!isPasswordValid) throw new UnauthorizedException(message);
 
       const payload = { email: user.email, sub: user.id };
 
@@ -71,8 +78,9 @@ export class AuthService {
 
       const u: Omit<User, 'password' | 'refreshToken'> = user
 
-      return reply.send({ success: true, data: { u } });
+      return reply.send({ success: true, data: { ...u } });
     } catch (error) {
+      console.error(String(error));
       if (error instanceof UnauthorizedException) throw error;
       throw new InternalServerErrorException('An error occurred while logging in');
     }
