@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from 'bcrypt';
@@ -21,6 +21,7 @@ export class AuthService {
 
   async register(registerDto: RegisterDto): Promise<{ success: boolean }> {
     try {
+      if (registerDto.password !== registerDto.passwordConfirmation) throw new BadRequestException('Password does not match the password confirmation');
       const existingUser = await this.usersRepository.findOneBy({ email: registerDto.email, phone: registerDto.phone });
 
       if (existingUser) throw new Error('User already exists')
