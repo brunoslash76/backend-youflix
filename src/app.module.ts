@@ -11,12 +11,16 @@ import { typeormConfig } from './config/typeorm.config.js';
 import { MailerModule } from './mailer/mailer.module';
 import { User } from './user/entities/user.entity.js';
 import { UserModule } from './user/user.module.js';
+import { Comment } from './video/entities/comments.entity.js';
+import { Genre } from './video/entities/genre.entity.js';
+import { Video } from './video/entities/video.entity.js';
+import { VideoModule } from './video/video.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(typeormConfig([User, Tokens])),
+    TypeOrmModule.forRoot(typeormConfig([User, Tokens, Video, Genre, Comment])),
     BullModule.forRootAsync({
       useFactory: () => ({
         connection: {
@@ -36,6 +40,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AuthModule,
     UserModule,
     MailerModule,
+    VideoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
