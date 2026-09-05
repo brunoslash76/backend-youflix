@@ -4,9 +4,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { config } from './config';
 import { AppModule, ObserveInstrument } from './app.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
+import { config } from './config';
 
 const COOKIE_SECRET = config.cookie.secret;
 const PORT = Number(process.env.PORT ?? 3000);
@@ -45,9 +45,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig)
   SwaggerModule.setup('api', app, document)
 
-  await app.listen(PORT, '0.0.0.0');
-  console.log(`Server is running on port ${PORT}`);
+  await app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 }
+
 void bootstrap().catch((error) => {
   console.error('Failed to start server: ', error);
   process.exit(1);
