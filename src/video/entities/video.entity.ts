@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
+import { VideoStatus } from "../types/video-status.type";
 import { Comment } from "./comments.entity";
 import { Genre } from "./genre.entity";
 
@@ -11,6 +12,12 @@ export class Video {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'authorId' })
   author: User;
+
+  @Column({ type: 'varchar', nullable: false })
+  contentType: string;
+
+  @Column({ type: 'int', nullable: false })
+  sizeBytes: number;
 
   @Column({ type: 'uuid', nullable: false })
   authorId: string;
@@ -31,16 +38,16 @@ export class Video {
   @OneToMany(() => Comment, (comment) => comment.video)
   comments: Comment[];
 
-  @Column({ type: 'bigint', default: 0 })
+  @Column({ type: 'int', default: 0 })
   views: number;
 
-  @Column({ type: 'bigint', default: 0 })
+  @Column({ type: 'int', default: 0 })
   likes: number;
 
-  @Column({ type: 'bigint', default: 0 })
+  @Column({ type: 'int', default: 0 })
   dislikes: number;
 
-  @Column()
+  @Column({ default: false })
   isPublic: boolean;
 
   @Column({ type: 'varchar', nullable: true })
@@ -48,6 +55,9 @@ export class Video {
 
   @Column({ type: 'varchar', nullable: true })
   thumbnailKey: string;
+
+  @Column({ type: 'enum', enum: VideoStatus, default: VideoStatus.IDLE })
+  status: VideoStatus;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

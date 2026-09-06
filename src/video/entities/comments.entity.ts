@@ -19,12 +19,15 @@ export class Comment {
   videoId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'authorId' })
   author: User;
 
+  @Index()
   @Column({ type: 'uuid' })
   authorId: string;
 
   @ManyToOne(() => Comment, (comment) => comment.replies, { nullable: true })
+  @JoinColumn({ name: 'parentId' })
   parent: Comment | null;
 
   @Column({ type: 'uuid', nullable: true })
