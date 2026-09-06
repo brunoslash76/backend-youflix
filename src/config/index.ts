@@ -28,6 +28,16 @@ export interface CONFIG  {
     host: string | undefined
     port: number | undefined
     password: string | undefined
+  },
+  aws: {
+    s3: {
+      region: string | undefined
+      endpoint: string | undefined
+      publicEndpoint: string | undefined
+      accessKeyId: string | undefined
+      secretAccessKey: string | undefined
+      bucket: string | undefined
+    }
   }
 } 
 
@@ -66,4 +76,14 @@ export const config: CONFIG = {
     port: +checkEnvVarAvailability('REDIS_PORT'),
     password: checkEnvVarAvailability('REDIS_PASSWORD'),
   },
+  aws: {
+    s3: {
+      region: checkEnvVarAvailability('AWS_S3_REGION'),
+      endpoint: process.env.AWS_S3_ENDPOINT,
+      publicEndpoint: process.env.AWS_S3_PUBLIC_ENDPOINT,
+      accessKeyId: checkEnvVarAvailability('AWS_S3_ACCESS_KEY_ID'),
+      secretAccessKey: checkEnvVarAvailability('AWS_S3_SECRET_ACCESS_KEY'),
+      bucket: checkEnvVarAvailability('AWS_S3_BUCKET'),
+    }
+  }
 }
