@@ -18,7 +18,7 @@ export class RegisterDto {
     minUppercase: 1,
     minNumbers: 1,
   }, {
-    message: 'Password must contain uppercase, lowercase, and a number',
+    message: 'Password must contain uppercase, lowercase, special character and a number',
   })
   password: string;
 

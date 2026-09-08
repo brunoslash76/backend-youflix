@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Res } from "@nestjs/common";
 import { type FastifyReply } from 'fastify';
 import { CurrentUser } from "../decorators/current-user.decorator.js";
 import { PublicRoute } from "../decorators/public-route.decorator.js";
@@ -6,10 +6,8 @@ import { User } from "../user/entities/user.entity.js";
 import { AuthService } from "./auth.service.js";
 import { LoginDto } from "./dto/login.dto.js";
 import { RegisterDto } from "./dto/register.dto.js";
-import { AuthGuard } from "./guards/auth.guard.js";
 
 @Controller('auth')
-@UseGuards(AuthGuard)
 export class AuthController {
   constructor(private authService: AuthService) { }
 
