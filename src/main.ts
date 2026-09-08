@@ -40,6 +40,7 @@ async function bootstrap() {
     .setTitle('YouFlix API')
     .setDescription('API for YouFlix')
     .setVersion('1.0')
+    .addCookieAuth('access_token')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig)

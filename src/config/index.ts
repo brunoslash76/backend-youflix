@@ -37,6 +37,7 @@ export interface CONFIG  {
       accessKeyId: string | undefined
       secretAccessKey: string | undefined
       bucket: string | undefined
+      cdnUrl: string | undefined
     }
   }
 } 
@@ -84,6 +85,7 @@ export const config: CONFIG = {
       accessKeyId: checkEnvVarAvailability('AWS_S3_ACCESS_KEY_ID'),
       secretAccessKey: checkEnvVarAvailability('AWS_S3_SECRET_ACCESS_KEY'),
       bucket: checkEnvVarAvailability('AWS_S3_BUCKET'),
+      cdnUrl: process.env.AWS_S3_CDN_URL,
     }
   }
 }

@@ -1,7 +1,8 @@
-import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { config } from "../config";
+
 
 @Injectable()
 export class StorageService {
@@ -66,5 +67,48 @@ export class StorageService {
       console.error(error);
       throw new InternalServerErrorException('Failed to head object');
     }
+  }
+
+  async getInternalPresignedGetUrl(key: string, expiresIn = 900) {
+    return await getSignedUrl(
+      this.client,
+      new GetObjectCommand({
+        Bucket: config.aws.s3.bucket,
+        Key: key,
+      }),
+      { expiresIn }
+    );
+  }
+
+  async getPublicPresignedGetUrl(key: string, expiresIn = 3600) {
+    return await getSignedUrl(
+      this.signingClient,
+      new GetObjectCommand({
+        Bucket: config.aws.s3.bucket,
+        Key: key,
+      }),
+      { expiresIn }
+    )
+  }
+
+  getPublicUrl(key: string) {
+    if (config.aws.s3.cdnUrl) {
+      return `${config.aws.s3.cdnUrl}/${key}`;
+    } 
+
+    const baseUrl = config.aws.s3.publicEndpoint ?? config.aws.s3.endpoint;
+    return `${baseUrl}/${config.aws.s3.bucket}/${key}`;
+  }
+
+  async putObject(key: string, body: Buffer, contentType: string, cacheControl?: string) {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: config.aws.s3.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+        ...(cacheControl ? { CacheControl: cacheControl } : {}),
+      })
+    )
   }
 }

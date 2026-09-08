@@ -1,5 +1,7 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import { BadRequestException, ForbiddenException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
 import { nanoid } from 'nanoid';
 import { In, Repository } from 'typeorm';
 import { config } from '../config';
@@ -19,7 +21,9 @@ export class VideoService {
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
-    private readonly storageService: StorageService
+    private readonly storageService: StorageService,
+    @InjectQueue('video-queue')
+    private readonly videoQueue: Queue
   ) { }
 
   async createUpload(user: User, videoMetadata: UploadVideoDto) {
@@ -78,6 +82,7 @@ export class VideoService {
       if (!video.storageKey) throw new NotFoundException('Missing storage key');
 
       const object = await this.storageService.headObject(video.storageKey);
+
       if (!object) throw new NotFoundException('File not found in storage');
 
       if (object.ContentLength != null && Number(object.ContentLength) !== Number(video.sizeBytes)) {
@@ -85,7 +90,21 @@ export class VideoService {
       }
 
       video.status = VideoStatus.PROCESSING;
+
       await this.videoRepository.save(video);
+
+      await this.videoQueue.add(
+        'process-video',
+        { publicId: video.publicId },
+        {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 1000,
+          },
+          removeOnComplete: true
+        }
+      )
 
       return {
         publicId: video.publicId,
@@ -120,6 +139,9 @@ export class VideoService {
         isPublic: video.isPublic,
         genres: video.genres,
         watchUrl: `${config.frontendUrl}/watch?v=${publicId}`,
+        thumbnailUrl: video.thumbnailKey
+          ? await this.storageService.getPublicUrl(video.thumbnailKey)
+          : null,
         author: {
           id: video.author.id,
           firstName: video.author.firstName,
@@ -128,6 +150,37 @@ export class VideoService {
       };
     } catch (error) {
       this.rethrowHttp(error, 'Failed to find video by public id');
+    }
+  }
+
+  async listVideos(page = 1, limit = 20) {
+    try {
+      const [videos, total] = await this.videoRepository.findAndCount({
+        where: { isPublic: true, status: VideoStatus.COMPLETED },
+        relations: {
+          genres: true,
+        },
+        order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      const items = await Promise.all(
+        videos.map(async (video) => ({
+          publicId: video.publicId,
+          title: video.title,
+          genres: video.genres,
+          views: video.views,
+          createdAt: video.createdAt,
+          thumbnailUrl: video.thumbnailKey
+            ? await this.storageService.getPublicUrl(video.thumbnailKey)
+            : null,
+        })),
+      )
+
+      return { items, total, page, limit }
+    } catch (error) {
+      this.rethrowHttp(error, 'Failed to list videos');
     }
   }
 

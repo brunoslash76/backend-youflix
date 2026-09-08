@@ -1,3 +1,4 @@
+import { getQueueToken } from '@nestjs/bullmq';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Genre } from './entities/genre.entity';
@@ -49,6 +50,10 @@ describe('VideoService', () => {
             getPresignedPutUrl: vi.fn(),
             headObject: vi.fn(),
           },
+        },
+        {
+          provide: getQueueToken('video-queue'),
+          useValue: { add: vi.fn() },
         },
       ],
     }).compile();
