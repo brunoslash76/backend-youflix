@@ -1,0 +1,1134 @@
+{
+    "item": [
+        {
+            "name": "/",
+            "description": "",
+            "item": [
+                {
+                    "id": "338565bc-a738-4efd-b2e9-176db644f047",
+                    "name": "App Controller get Hello",
+                    "request": {
+                        "name": "App Controller get Hello",
+                        "description": {},
+                        "url": {
+                            "path": [
+                                ""
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "1acf9830-3d10-4433-8738-2dff8ade57e9",
+                            "name": "200",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        ""
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "auth",
+            "description": "",
+            "item": [
+                {
+                    "name": "health",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "347b366d-07c8-4ed9-906d-6af36691a08a",
+                            "name": "Auth Controller health",
+                            "request": {
+                                "name": "Auth Controller health",
+                                "description": {},
+                                "url": {
+                                    "path": [
+                                        "auth",
+                                        "health"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "method": "GET",
+                                "body": {},
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "ae0f7fb7-50de-4d5b-9337-fc00cb09b456",
+                                    "name": "200",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "auth",
+                                                "health"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "method": "GET",
+                                        "body": {}
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "register",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "8420a82d-8f97-42af-a4ce-eb5d1e21ad17",
+                            "name": "Auth Controller register",
+                            "request": {
+                                "name": "Auth Controller register",
+                                "description": {},
+                                "url": {
+                                    "path": [
+                                        "auth",
+                                        "register"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"email\": \"<email>\",\n  \"password\": \"<string>\",\n  \"passwordConfirmation\": \"<string>\",\n  \"phone\": \"<string>\",\n  \"firstName\": \"<string>\",\n  \"lastName\": \"<string>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "1184d6da-8498-4834-8210-f6fc870a258e",
+                                    "name": "201",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "auth",
+                                                "register"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n  \"email\": \"<email>\",\n  \"password\": \"<string>\",\n  \"passwordConfirmation\": \"<string>\",\n  \"phone\": \"<string>\",\n  \"firstName\": \"<string>\",\n  \"lastName\": \"<string>\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "headerFamily": "json",
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "status": "Created",
+                                    "code": 201,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "login",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "ba1bc506-602a-48a7-8954-8ee6585d6f1f",
+                            "name": "Auth Controller login",
+                            "request": {
+                                "name": "Auth Controller login",
+                                "description": {},
+                                "url": {
+                                    "path": [
+                                        "auth",
+                                        "login"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "bb1641aa-4cf4-4f8f-9373-915b47f4f77b",
+                                    "name": "201",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "auth",
+                                                "login"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{}",
+                                            "options": {
+                                                "raw": {
+                                                    "headerFamily": "json",
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "status": "Created",
+                                    "code": 201,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "logout",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "7980cf25-9bd3-4e87-9b1d-1d9f5ff2d0a8",
+                            "name": "Auth Controller logout",
+                            "request": {
+                                "name": "Auth Controller logout",
+                                "description": {},
+                                "url": {
+                                    "path": [
+                                        "auth",
+                                        "logout"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "method": "POST",
+                                "body": {},
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "038bf9e7-55b7-4bf5-8709-4edf9285454c",
+                                    "name": "201",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "auth",
+                                                "logout"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "method": "POST",
+                                        "body": {}
+                                    },
+                                    "status": "Created",
+                                    "code": 201,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "video",
+            "description": "",
+            "item": [
+                {
+                    "name": "upload",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "83bb16c7-a145-4bda-a0ae-d6311b0bca9f",
+                            "name": "Start a video upload",
+                            "request": {
+                                "name": "Start a video upload",
+                                "description": {
+                                    "content": "Start a video upload",
+                                    "type": "text/plain"
+                                },
+                                "url": {
+                                    "path": [
+                                        "video",
+                                        "upload"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"title\": \"<string>\",\n  \"description\": \"<string>\",\n  \"genreIds\": [\n    [\n      \"<string>\",\n      \"<string>\"\n    ]\n  ],\n  \"contentType\": \"<string>\",\n  \"sizeBytes\": \"<number>\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "headerFamily": "json",
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "auth": {
+                                    "type": "apikey",
+                                    "apikey": [
+                                        {
+                                            "key": "key",
+                                            "value": "access_token"
+                                        },
+                                        {
+                                            "key": "value",
+                                            "value": "{{apiKey}}"
+                                        },
+                                        {
+                                            "key": "in",
+                                            "value": "header"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": [
+                                {
+                                    "id": "0544731e-772c-412b-aaef-007167d8c5b8",
+                                    "name": "201",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                "upload"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "description": {
+                                                    "content": "Added as a part of security scheme: apikey",
+                                                    "type": "text/plain"
+                                                },
+                                                "key": "access_token",
+                                                "value": "<API Key>"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n  \"title\": \"<string>\",\n  \"description\": \"<string>\",\n  \"genreIds\": [\n    [\n      \"<string>\",\n      \"<string>\"\n    ]\n  ],\n  \"contentType\": \"<string>\",\n  \"sizeBytes\": \"<number>\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "headerFamily": "json",
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "status": "Created",
+                                    "code": 201,
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{\n  \"publicId\": \"<string>\",\n  \"uploadUrl\": \"<string>\",\n  \"status\": \"analyzing\",\n  \"createdAt\": \"<dateTime>\",\n  \"updatedAt\": \"<dateTime>\"\n}",
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "json"
+                                },
+                                {
+                                    "id": "8b85ec24-fb2f-48a6-8c7f-ed701ed7af53",
+                                    "name": "Invalid metadata, content type, or genre ids",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                "upload"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "description": {
+                                                    "content": "Added as a part of security scheme: apikey",
+                                                    "type": "text/plain"
+                                                },
+                                                "key": "access_token",
+                                                "value": "<API Key>"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n  \"title\": \"<string>\",\n  \"description\": \"<string>\",\n  \"genreIds\": [\n    [\n      \"<string>\",\n      \"<string>\"\n    ]\n  ],\n  \"contentType\": \"<string>\",\n  \"sizeBytes\": \"<number>\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "headerFamily": "json",
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                },
+                                {
+                                    "id": "c4eb4628-8d78-44f9-bb7c-285e96b69b04",
+                                    "name": "Missing or invalid access_token",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                "upload"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json"
+                                            },
+                                            {
+                                                "description": {
+                                                    "content": "Added as a part of security scheme: apikey",
+                                                    "type": "text/plain"
+                                                },
+                                                "key": "access_token",
+                                                "value": "<API Key>"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n  \"title\": \"<string>\",\n  \"description\": \"<string>\",\n  \"genreIds\": [\n    [\n      \"<string>\",\n      \"<string>\"\n    ]\n  ],\n  \"contentType\": \"<string>\",\n  \"sizeBytes\": \"<number>\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "headerFamily": "json",
+                                                    "language": "json"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "status": "Unauthorized",
+                                    "code": 401,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "{publicId}",
+                    "description": "",
+                    "item": [
+                        {
+                            "name": "complete",
+                            "description": "",
+                            "item": [
+                                {
+                                    "id": "76c47537-937a-4483-b096-440aa251630a",
+                                    "name": "Complete a video upload",
+                                    "request": {
+                                        "name": "Complete a video upload",
+                                        "description": {
+                                            "content": "Complete a video upload",
+                                            "type": "text/plain"
+                                        },
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                ":publicId",
+                                                "complete"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": [
+                                                {
+                                                    "type": "any",
+                                                    "value": "<string>",
+                                                    "key": "publicId",
+                                                    "disabled": false,
+                                                    "description": {
+                                                        "content": "(Required) ",
+                                                        "type": "text/plain"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "method": "POST",
+                                        "body": {},
+                                        "auth": {
+                                            "type": "apikey",
+                                            "apikey": [
+                                                {
+                                                    "key": "key",
+                                                    "value": "access_token"
+                                                },
+                                                {
+                                                    "key": "value",
+                                                    "value": "{{apiKey}}"
+                                                },
+                                                {
+                                                    "key": "in",
+                                                    "value": "header"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "response": [
+                                        {
+                                            "id": "f07232a3-559d-4b57-9828-41fefe25daa8",
+                                            "name": "200",
+                                            "originalRequest": {
+                                                "url": {
+                                                    "path": [
+                                                        "video",
+                                                        ":publicId",
+                                                        "complete"
+                                                    ],
+                                                    "host": [
+                                                        "{{baseUrl}}"
+                                                    ],
+                                                    "query": [],
+                                                    "variable": [
+                                                        {
+                                                            "disabled": false,
+                                                            "description": {
+                                                                "content": "(Required) ",
+                                                                "type": "text/plain"
+                                                            },
+                                                            "type": "any",
+                                                            "value": "<string>",
+                                                            "key": "publicId"
+                                                        }
+                                                    ]
+                                                },
+                                                "header": [
+                                                    {
+                                                        "key": "Accept",
+                                                        "value": "application/json"
+                                                    },
+                                                    {
+                                                        "description": {
+                                                            "content": "Added as a part of security scheme: apikey",
+                                                            "type": "text/plain"
+                                                        },
+                                                        "key": "access_token",
+                                                        "value": "<API Key>"
+                                                    }
+                                                ],
+                                                "method": "POST",
+                                                "body": {}
+                                            },
+                                            "status": "OK",
+                                            "code": 200,
+                                            "header": [
+                                                {
+                                                    "key": "Content-Type",
+                                                    "value": "application/json"
+                                                }
+                                            ],
+                                            "body": "{\n  \"publicId\": \"<string>\",\n  \"uploadUrl\": \"<string>\",\n  \"status\": \"analyzing\",\n  \"createdAt\": \"<dateTime>\",\n  \"updatedAt\": \"<dateTime>\"\n}",
+                                            "cookie": [],
+                                            "_postman_previewlanguage": "json"
+                                        },
+                                        {
+                                            "id": "e3d5e0e8-2dab-40a0-994d-d065c01acfc7",
+                                            "name": "Invalid publicId",
+                                            "originalRequest": {
+                                                "url": {
+                                                    "path": [
+                                                        "video",
+                                                        ":publicId",
+                                                        "complete"
+                                                    ],
+                                                    "host": [
+                                                        "{{baseUrl}}"
+                                                    ],
+                                                    "query": [],
+                                                    "variable": [
+                                                        {
+                                                            "disabled": false,
+                                                            "description": {
+                                                                "content": "(Required) ",
+                                                                "type": "text/plain"
+                                                            },
+                                                            "type": "any",
+                                                            "value": "<string>",
+                                                            "key": "publicId"
+                                                        }
+                                                    ]
+                                                },
+                                                "header": [
+                                                    {
+                                                        "description": {
+                                                            "content": "Added as a part of security scheme: apikey",
+                                                            "type": "text/plain"
+                                                        },
+                                                        "key": "access_token",
+                                                        "value": "<API Key>"
+                                                    }
+                                                ],
+                                                "method": "POST",
+                                                "body": {}
+                                            },
+                                            "status": "Bad Request",
+                                            "code": 400,
+                                            "header": [],
+                                            "cookie": [],
+                                            "_postman_previewlanguage": "text"
+                                        },
+                                        {
+                                            "id": "8740f039-2e64-4d94-bb4a-a25e341346c2",
+                                            "name": "Missing or invalid access_token",
+                                            "originalRequest": {
+                                                "url": {
+                                                    "path": [
+                                                        "video",
+                                                        ":publicId",
+                                                        "complete"
+                                                    ],
+                                                    "host": [
+                                                        "{{baseUrl}}"
+                                                    ],
+                                                    "query": [],
+                                                    "variable": [
+                                                        {
+                                                            "disabled": false,
+                                                            "description": {
+                                                                "content": "(Required) ",
+                                                                "type": "text/plain"
+                                                            },
+                                                            "type": "any",
+                                                            "value": "<string>",
+                                                            "key": "publicId"
+                                                        }
+                                                    ]
+                                                },
+                                                "header": [
+                                                    {
+                                                        "description": {
+                                                            "content": "Added as a part of security scheme: apikey",
+                                                            "type": "text/plain"
+                                                        },
+                                                        "key": "access_token",
+                                                        "value": "<API Key>"
+                                                    }
+                                                ],
+                                                "method": "POST",
+                                                "body": {}
+                                            },
+                                            "status": "Unauthorized",
+                                            "code": 401,
+                                            "header": [],
+                                            "cookie": [],
+                                            "_postman_previewlanguage": "text"
+                                        }
+                                    ],
+                                    "event": [],
+                                    "protocolProfileBehavior": {
+                                        "disableBodyPruning": true
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": "76b38431-b607-49f1-a411-56c0e5f58a38",
+                            "name": "Get a video by publicId",
+                            "request": {
+                                "name": "Get a video by publicId",
+                                "description": {
+                                    "content": "Get a video by publicId",
+                                    "type": "text/plain"
+                                },
+                                "url": {
+                                    "path": [
+                                        "video",
+                                        ":publicId"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": [
+                                        {
+                                            "type": "any",
+                                            "value": "<string>",
+                                            "key": "publicId",
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {},
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "4920fa51-f760-43bc-80a2-6145f42a59d8",
+                                    "name": "200",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                ":publicId"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": [
+                                                {
+                                                    "disabled": false,
+                                                    "description": {
+                                                        "content": "(Required) ",
+                                                        "type": "text/plain"
+                                                    },
+                                                    "type": "any",
+                                                    "value": "<string>",
+                                                    "key": "publicId"
+                                                }
+                                            ]
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "method": "GET",
+                                        "body": {}
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "{}",
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "json"
+                                },
+                                {
+                                    "id": "8aa7ad30-a11f-4d86-8225-39cc5f8fe4cc",
+                                    "name": "Video not found",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "video",
+                                                ":publicId"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": [
+                                                {
+                                                    "disabled": false,
+                                                    "description": {
+                                                        "content": "(Required) ",
+                                                        "type": "text/plain"
+                                                    },
+                                                    "type": "any",
+                                                    "value": "<string>",
+                                                    "key": "publicId"
+                                                }
+                                            ]
+                                        },
+                                        "method": "GET",
+                                        "body": {}
+                                    },
+                                    "status": "Not Found",
+                                    "code": 404,
+                                    "header": [],
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "text"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "d518f247-5540-4479-b5ad-31aa1dc3654d",
+                    "name": "List public videos",
+                    "request": {
+                        "name": "List public videos",
+                        "description": {
+                            "content": "Paginated list of public, completed videos",
+                            "type": "text/plain"
+                        },
+                        "url": {
+                            "path": [
+                                "video"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "page",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "limit",
+                                    "value": "<string>"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "method": "GET",
+                        "body": {},
+                        "auth": null
+                    },
+                    "response": [
+                        {
+                            "id": "00634520-2879-4a34-a954-a2e12c3d3913",
+                            "name": "200",
+                            "originalRequest": {
+                                "url": {
+                                    "path": [
+                                        "video"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "page",
+                                            "value": "<string>"
+                                        },
+                                        {
+                                            "disabled": false,
+                                            "description": {
+                                                "content": "(Required) ",
+                                                "type": "text/plain"
+                                            },
+                                            "key": "limit",
+                                            "value": "<string>"
+                                        }
+                                    ],
+                                    "variable": []
+                                },
+                                "method": "GET",
+                                "body": {}
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [],
+                            "cookie": [],
+                            "_postman_previewlanguage": "text"
+                        }
+                    ],
+                    "event": [],
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "genre",
+            "description": "",
+            "item": [
+                {
+                    "name": "all",
+                    "description": "",
+                    "item": [
+                        {
+                            "id": "61eaac74-3da1-42e6-858e-7f9382e30c93",
+                            "name": "Get all genres",
+                            "request": {
+                                "name": "Get all genres",
+                                "description": {
+                                    "content": "Get all genres",
+                                    "type": "text/plain"
+                                },
+                                "url": {
+                                    "path": [
+                                        "genre",
+                                        "all"
+                                    ],
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "query": [],
+                                    "variable": []
+                                },
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "method": "GET",
+                                "body": {},
+                                "auth": null
+                            },
+                            "response": [
+                                {
+                                    "id": "844d96c0-d31b-4503-ad60-c65d92466ef7",
+                                    "name": "200",
+                                    "originalRequest": {
+                                        "url": {
+                                            "path": [
+                                                "genre",
+                                                "all"
+                                            ],
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "query": [],
+                                            "variable": []
+                                        },
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json"
+                                            }
+                                        ],
+                                        "method": "GET",
+                                        "body": {}
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "body": "[]",
+                                    "cookie": [],
+                                    "_postman_previewlanguage": "json"
+                                }
+                            ],
+                            "event": [],
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "event": [],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000"
+        }
+    ],
+    "info": {
+        "_postman_id": "5f42ebcf-b3e2-4059-8b82-7cd80038fb9f",
+        "name": "YouFlix API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": {
+            "content": "API for YouFlix",
+            "type": "text/plain"
+        }
+    }
+}

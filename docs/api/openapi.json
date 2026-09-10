@@ -1,0 +1,472 @@
+{
+    "openapi": "3.0.0",
+    "paths": {
+        "/": {
+            "get": {
+                "operationId": "AppController_getHello",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "App"
+                ]
+            }
+        },
+        "/auth/health": {
+            "get": {
+                "operationId": "AuthController_health",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ]
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "operationId": "AuthController_register",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "operationId": "AuthController_login",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "operationId": "AuthController_logout",
+                "parameters": [],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    }
+                },
+                "tags": [
+                    "Auth"
+                ]
+            }
+        },
+        "/video/upload": {
+            "post": {
+                "description": "Start a video upload",
+                "operationId": "VideoController_uploadVideo",
+                "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UploadVideoDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateUploadResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid metadata, content type, or genre ids"
+                    },
+                    "401": {
+                        "description": "Missing or invalid access_token"
+                    }
+                },
+                "security": [
+                    {
+                        "cookie": []
+                    }
+                ],
+                "summary": "Start a video upload",
+                "tags": [
+                    "video"
+                ]
+            }
+        },
+        "/video/{publicId}/complete": {
+            "post": {
+                "description": "Complete a video upload",
+                "operationId": "VideoController_completeUpload",
+                "parameters": [
+                    {
+                        "name": "publicId",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateUploadResponseDto"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid publicId"
+                    },
+                    "401": {
+                        "description": "Missing or invalid access_token"
+                    }
+                },
+                "security": [
+                    {
+                        "cookie": []
+                    }
+                ],
+                "summary": "Complete a video upload",
+                "tags": [
+                    "video"
+                ]
+            }
+        },
+        "/video": {
+            "get": {
+                "description": "Paginated list of public, completed videos",
+                "operationId": "VideoController_listVideos",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "required": true,
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                },
+                "summary": "List public videos",
+                "tags": [
+                    "video"
+                ]
+            }
+        },
+        "/video/{publicId}": {
+            "get": {
+                "description": "Get a video by publicId",
+                "operationId": "VideoController_getVideo",
+                "parameters": [
+                    {
+                        "name": "publicId",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Video"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Video not found"
+                    }
+                },
+                "summary": "Get a video by publicId",
+                "tags": [
+                    "video"
+                ]
+            }
+        },
+        "/genre/all": {
+            "get": {
+                "description": "Get all genres",
+                "operationId": "GenresController_getGenres",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Genre"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "Get all genres",
+                "tags": [
+                    "genre"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "YouFlix API",
+        "description": "API for YouFlix",
+        "version": "1.0",
+        "contact": {}
+    },
+    "tags": [],
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "Current environment"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "cookie": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "access_token"
+            }
+        },
+        "schemas": {
+            "RegisterDto": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "test@example.com",
+                        "minLength": 3,
+                        "maxLength": 255,
+                        "description": "The email of the user",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "Password123!",
+                        "minLength": 8,
+                        "maxLength": 255,
+                        "description": "The password of the user",
+                        "format": "password"
+                    },
+                    "passwordConfirmation": {
+                        "type": "string",
+                        "example": "Password123!",
+                        "minLength": 8,
+                        "maxLength": 255,
+                        "description": "The password confirmation of the user",
+                        "format": "password"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+998901234567",
+                        "minLength": 8,
+                        "maxLength": 255,
+                        "description": "The phone number of the user",
+                        "format": "phone"
+                    },
+                    "firstName": {
+                        "type": "string",
+                        "example": "John",
+                        "minLength": 2,
+                        "maxLength": 255,
+                        "description": "The first name of the user",
+                        "format": "string"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "example": "Doe",
+                        "minLength": 2,
+                        "maxLength": 255,
+                        "description": "The last name of the user",
+                        "format": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "password",
+                    "passwordConfirmation",
+                    "phone",
+                    "firstName",
+                    "lastName"
+                ]
+            },
+            "LoginDto": {
+                "type": "object",
+                "properties": {}
+            },
+            "UploadVideoDto": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "example": "My Fist Video",
+                        "minLength": 7,
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A short clip for testing upload",
+                        "maxLength": 5000
+                    },
+                    "genreIds": {
+                        "example": [
+                            "123e4567-e89b-12d3-a456-426614174000"
+                        ],
+                        "minItems": 1,
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "format": "uuid"
+                        },
+                        "type": "array"
+                    },
+                    "contentType": {
+                        "type": "string",
+                        "example": "video/mp4",
+                        "format": "mime-type",
+                        "examples": [
+                            "video/mp4",
+                            "video/webm",
+                            "video/ogg",
+                            "video/quicktime"
+                        ]
+                    },
+                    "sizeBytes": {
+                        "type": "number",
+                        "example": 1073741824,
+                        "format": "int32",
+                        "minimum": 1,
+                        "maximum": 5368709120,
+                        "description": "Exact file size in bytes. Must match the file you PUT to uploadUrl"
+                    }
+                },
+                "required": [
+                    "title",
+                    "description",
+                    "genreIds",
+                    "contentType",
+                    "sizeBytes"
+                ]
+            },
+            "CreateUploadResponseDto": {
+                "type": "object",
+                "properties": {
+                    "publicId": {
+                        "type": "string",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "uploadUrl": {
+                        "type": "string",
+                        "example": "https://your-bucket.s3.amazonaws.com/123e4567-e89b-12d3-a456-426614174000",
+                        "description": "URL to upload the video to S3"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "awaiting_upload",
+                            "uploaded",
+                            "analyzing",
+                            "transcoding",
+                            "ready",
+                            "failed"
+                        ],
+                        "example": "awaiting_upload"
+                    },
+                    "createdAt": {
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2026-09-07T14:00:00.000Z"
+                    },
+                    "updatedAt": {
+                        "format": "date-time",
+                        "type": "string",
+                        "example": "2026-09-07T14:00:00.000Z"
+                    }
+                },
+                "required": [
+                    "publicId",
+                    "uploadUrl",
+                    "status",
+                    "createdAt",
+                    "updatedAt"
+                ]
+            },
+            "Video": {
+                "type": "object",
+                "properties": {}
+            },
+            "Genre": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    }
+}
