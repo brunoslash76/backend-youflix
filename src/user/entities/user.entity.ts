@@ -14,7 +14,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: false, select: false })
   password: string;
 
   @Column({ unique: true })
@@ -26,7 +26,7 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true, default: null, select: false })
   refreshToken: string;
 
   @CreateDateColumn({ type: 'timestamptz' })

@@ -11,7 +11,7 @@ export class AuthGuard implements CanActivate {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
@@ -22,10 +22,10 @@ export class AuthGuard implements CanActivate {
 
     try {
       const decoded = this.jwtService.verify(token);
-      const user: Omit<User, 'password' | 'refreshToken'> = await this.usersRepository.findOneByOrFail({ id: decoded.sub });
+      const { password: _password, refreshToken: _refreshToken, ...user } = await this.usersRepository.findOneByOrFail({ id: decoded.sub });
       request.user = user;
       return true;
-    } catch(error) {
+    } catch (error) {
       console.error(String(error));
       return false
     }

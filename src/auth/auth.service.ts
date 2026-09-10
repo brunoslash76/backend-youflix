@@ -56,7 +56,7 @@ export class AuthService {
       const payload = { email: user.email, sub: user.id };
 
       const accessToken = this.jwtService.sign(payload, { expiresIn: config.jwt.accessTokenExpiresIn })
-      
+
       reply.cookie('access_token', accessToken, {
         path: '/',
         httpOnly: true,
@@ -77,7 +77,7 @@ export class AuthService {
         sameSite: 'lax',
       })
 
-      const u: Omit<User, 'password' | 'refreshToken'> = user
+      const { password: _password, refreshToken: _refreshToken, ...u } = user
 
       return reply.send({ success: true, data: { ...u } });
     } catch (error) {
@@ -94,8 +94,8 @@ export class AuthService {
       if (!tokenRecord) throw new UnauthorizedException('Invalid refresh token');
 
       await this.tokensRepository.update(tokenRecord.id, { isRevoked: true, isUsed: true });
-    } catch(error) {
-      if(error instanceof UnauthorizedException) throw error;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) throw error;
       throw new InternalServerErrorException('An error occurred while logging out');
     } finally {
       reply.cookie('access_token', '', {
@@ -116,19 +116,19 @@ export class AuthService {
       const user = await this.usersRepository.findOneByOrFail({ email });
       // TODO: Send reset password email here
       return reply.send({ success: true, message: 'Reset password email sent' })
-    } catch(error) {
+    } catch (error) {
       throw new InternalServerErrorException('An error occurred while resetting password');
     }
   }
 
   async rotateRefreshToken(oldTokenString: string) {
     try {
-      const payload = this.jwtService.verify(oldTokenString, { secret: config.jwt.refreshTokenSecret });
+      const payload = this.jwtService.verify(oldTokenString, { secret: config.jwt.secret });
       const tokenRecord = await this.tokensRepository.findOneByOrFail({ refreshToken: oldTokenString });
 
       if (!tokenRecord || tokenRecord.isRevoked) throw new UnauthorizedException('Acess Denied');
 
-      if(tokenRecord.isUsed) {
+      if (tokenRecord.isUsed) {
         await this.tokensRepository.update(tokenRecord.id, { isRevoked: true });
         // TODO: Add sentry here or something similar
         throw new UnauthorizedException('Security breach detected. Full session revoked.');
@@ -137,7 +137,7 @@ export class AuthService {
       await this.tokensRepository.update(tokenRecord.id, { isUsed: true });
 
       const newAccessToken = this.jwtService.sign({ sub: payload.sub }, { expiresIn: config.jwt.accessTokenExpiresIn })
-      const newRefreshToken = this.jwtService.sign({sub: payload.sub, family: tokenRecord.tokenFamily }, { expiresIn: config.jwt.refreshTokenExpiresIn })
+      const newRefreshToken = this.jwtService.sign({ sub: payload.sub, family: tokenRecord.tokenFamily }, { expiresIn: config.jwt.refreshTokenExpiresIn })
 
       const newTokenRecord = this.tokensRepository.create({
         refreshToken: newRefreshToken,
@@ -153,7 +153,7 @@ export class AuthService {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken
       }
-    } catch(error) {
+    } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
