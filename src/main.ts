@@ -41,6 +41,7 @@ async function bootstrap() {
     .setTitle('YouFlix API')
     .setDescription('API for YouFlix')
     .setVersion('1.0')
+    .addServer(process.env.API_PUBLIC_URL ?? `http://localhost:${PORT}`, 'Current environment')
     .addCookieAuth('access_token')
     .build();
 
