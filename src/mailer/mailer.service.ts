@@ -1,7 +1,7 @@
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { type Queue } from 'bull';
+import { Queue } from 'bullmq';
 import { config } from '../config';
 import { User } from '../user/entities/user.entity';
 

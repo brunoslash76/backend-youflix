@@ -1,5 +1,4 @@
-import { Processor } from "@nestjs/bull";
-import { WorkerHost } from "@nestjs/bullmq";
+import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 import Mailgun from "mailgun.js";
 import { config } from "../../config";
