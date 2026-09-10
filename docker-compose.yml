@@ -107,11 +107,45 @@ services:
     networks:
       - app-network
 
+  worker:
+    command: npm run start:worker:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: node_worker
+    restart: always
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      APP_ROLE: worker
+      POSTGRES_HOST: db
+      DATABASE_URL: postgres://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD:-app_password}@db:5432/${POSTGRES_DB:-app_db}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/dist
+      - transcode_tmp:/tmp/transcode
+    networks: [app-network]
+    
 volumes:
   redis_data:
   postgres_data:
     driver: local
   minio_data:
+    driver: local
+  transcode_tmp:
     driver: local
 
 networks:
