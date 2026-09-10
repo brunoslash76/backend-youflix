@@ -4,9 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule, ObserveInstrument } from './app.module.js';
+import { AppModule } from './app.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { config } from './config';
+import { ObserveInstrument } from './observe.js';
 
 const COOKIE_SECRET = config.cookie.secret;
 const PORT = Number(process.env.PORT ?? 3000);

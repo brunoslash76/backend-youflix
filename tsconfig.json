@@ -16,7 +16,8 @@
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "lib": ["ES2023"]
   },
   "include": ["src/**/*"]
 }
