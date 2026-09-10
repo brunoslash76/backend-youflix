@@ -54,13 +54,13 @@ export class VideoProcessor extends WorkerHost {
       }
 
       video.thumbnailKey = keys[0];
-      video.status = VideoStatus.COMPLETED;
+      video.status = VideoStatus.READY;
       video.isPublic = true;
       await this.videoRepository.save(video);
       this.logger.log(`Processed video: ${job.data.publicId}`);
     } catch (error) {
       if(job.attemptsMade + 1 >= (job.opts.attempts ?? 1)) { 
-        video!.status = VideoStatus.ERROR;
+        video!.status = VideoStatus.FAILED;
       }
       this.logger.error(`Error processing video: ${job.data.publicId}`, error);
       throw error;

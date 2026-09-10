@@ -15,7 +15,7 @@ export class CreateUploadResponseDto {
 
   @ApiProperty({
     enum: VideoStatus,
-    example: VideoStatus.PROCESSING,
+    example: VideoStatus.AWAITING_UPLOAD,
   })
   status: VideoStatus;
 

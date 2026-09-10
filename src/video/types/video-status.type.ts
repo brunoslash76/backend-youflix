@@ -1,6 +1,8 @@
 export enum VideoStatus {
-  IDLE = 'idle',
-  PROCESSING = 'processing',
-  COMPLETED = 'completed',
-  ERROR = 'error',
+  AWAITING_UPLOAD = 'awaiting_upload',  // row created, S3 upload not finished
+  UPLOADED = 'uploaded',          // bytes confirmed in S3, queued
+  ANALYZING = 'analyzing',         // probing
+  TRANSCODING = 'transcoding',       // ladder in flight
+  READY = 'ready',             // master playlist written, playable
+  FAILED = 'failed',
 }

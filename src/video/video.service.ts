@@ -47,7 +47,7 @@ export class VideoService {
         genres,
         storageKey,
         isPublic: false,
-        status: VideoStatus.IDLE,
+        status: VideoStatus.AWAITING_UPLOAD,
         contentType: videoMetadata.contentType,
         sizeBytes: videoMetadata.sizeBytes,
         description: videoMetadata.description,
@@ -89,7 +89,7 @@ export class VideoService {
         throw new BadRequestException('Uploaded file size does not match');
       }
 
-      video.status = VideoStatus.PROCESSING;
+      video.status = VideoStatus.UPLOADED;
 
       await this.videoRepository.save(video);
 
@@ -156,7 +156,7 @@ export class VideoService {
   async listVideos(page = 1, limit = 20) {
     try {
       const [videos, total] = await this.videoRepository.findAndCount({
-        where: { isPublic: true, status: VideoStatus.COMPLETED },
+        where: { isPublic: true, status: VideoStatus.READY },
         relations: {
           genres: true,
         },

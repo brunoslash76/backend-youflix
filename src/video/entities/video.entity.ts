@@ -3,6 +3,7 @@ import { User } from "../../user/entities/user.entity";
 import { VideoStatus } from "../types/video-status.type";
 import { Comment } from "./comments.entity";
 import { Genre } from "./genre.entity";
+import { VideoRendition } from "./video-rendition.entity";
 
 @Entity('videos')
 export class Video {
@@ -16,7 +17,14 @@ export class Video {
   @Column({ type: 'varchar', nullable: false })
   contentType: string;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({
+    type: 'bigint',
+    nullable: false,
+    transformer: {
+      to: (v: number) => v,
+      from: (v: string) => Number(v)
+    }
+  })
   sizeBytes: number;
 
   @Column({ type: 'uuid', nullable: false })
@@ -30,8 +38,8 @@ export class Video {
 
   @Column({ type: 'varchar' })
   description: string;
-  
-  @ManyToMany(() => Genre, (genre) => genre.videos, { cascade: false})
+
+  @ManyToMany(() => Genre, (genre) => genre.videos, { cascade: false })
   @JoinTable({ name: 'video_genres' })
   genres: Genre[];
 
@@ -56,8 +64,23 @@ export class Video {
   @Column({ type: 'varchar', nullable: true })
   thumbnailKey: string;
 
-  @Column({ type: 'enum', enum: VideoStatus, default: VideoStatus.IDLE })
+  @Column({ type: 'enum', enum: VideoStatus, default: VideoStatus.AWAITING_UPLOAD })
   status: VideoStatus;
+
+  @OneToMany(() => VideoRendition, (rendition) => rendition.video)
+  renditions: VideoRendition[];
+
+  @Column({ type: 'float', nullable: true })
+  durationSeconds: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  sourceWidth: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  sourceHeight: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  hlsMasterKey: string | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
