@@ -1,11 +1,9 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
-import { execFile } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { promisify } from "node:util";
+import { execFileAsync } from "./utils/exec-file-async.util";
 
-const execFileAsync = promisify(execFile)
 
 @Injectable()
 export class ThumbnailService {
