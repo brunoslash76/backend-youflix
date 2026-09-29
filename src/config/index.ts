@@ -50,7 +50,7 @@ const checkEnvVarAvailability = (name: string) => {
 
 export const config: CONFIG = {
   database: {
-    url: process.env.DATABASE_URL ?? checkEnvVarAvailability('POSTGRES_URL'),
+    url: process.env.DATABASE_URL ?? process.env.POSTGRES_URL,
     user: checkEnvVarAvailability('POSTGRES_USER'),
     password: checkEnvVarAvailability('POSTGRES_PASSWORD'),
     port: +checkEnvVarAvailability('POSTGRES_PORT'),
@@ -60,7 +60,7 @@ export const config: CONFIG = {
   jwt: {
     secret: checkEnvVarAvailability('JWT_SECRET'),
     refreshTokenSecret: checkEnvVarAvailability('REFRESH_TOKEN_SECRET'),
-    accessTokenExpiresIn: 15,
+    accessTokenExpiresIn: 15 * 60,
     refreshTokenExpiresIn: 7 * 24 * 60 * 60,
   },
   cookie: {

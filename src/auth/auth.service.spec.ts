@@ -4,6 +4,7 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import * as bcrypt from 'bcrypt';
 import { Repository } from "typeorm";
 import { type Mocked } from "vitest";
+import { MailerService } from "../mailer/mailer.service";
 import { User } from "../user/entities/user.entity";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
@@ -60,6 +61,9 @@ describe('AuthService', () => {
     const mockJwtService = {
       sign: vi.fn().mockReturnValue('mocked-token'),
     }
+    const mockMailerService = {
+      sendAccountActivationEmail: vi.fn().mockResolvedValue(undefined),
+    }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -75,7 +79,11 @@ describe('AuthService', () => {
         {
           provide: getRepositoryToken(Tokens),
           useValue: mockTokensRepository,
-        }
+        },
+        {
+          provide: MailerService,
+          useValue: mockMailerService,
+        },
       ],
     }).compile();
 
@@ -115,11 +123,13 @@ describe('AuthService', () => {
       expect(usersRepository.create).toHaveBeenCalledWith({
         ...signUpDTO,
         password: 'hashed-password',
+        isActive: false,
       })
 
       expect(usersRepository.save).toHaveBeenCalledWith({
         ...signUpDTO,
         password: 'hashed-password',
+        isActive: false,
       })
 
       expect(result).toEqual({ success: true });

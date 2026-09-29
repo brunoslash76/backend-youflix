@@ -6,6 +6,7 @@ import { type JwtPayload } from 'jsonwebtoken';
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { Repository } from "typeorm";
 import { User } from "../../user/entities/user.entity";
+import { ACCESS_TOKEN_COOKIE } from "../utils/auth-cookies.util.js";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -20,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: FastifyRequest) => {
-          return request?.cookies?.access_token || null
+          return request?.cookies?.[ACCESS_TOKEN_COOKIE] || null
         }
       ]),
       ignoreExpiration: false,

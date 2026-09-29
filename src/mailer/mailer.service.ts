@@ -21,7 +21,7 @@ export class MailerService {
       {
         to: user.email,
         subject: 'Account Activation',
-        text: `Click the link to activate your account: ${url}`,
+        template: 'account-activation',
         variables: {
           name: user.firstName + ' ' + user.lastName,
           url,
@@ -46,7 +46,7 @@ export class MailerService {
       {
         to: user.email,
         subject: 'Password Reset',
-        text: `Click the link to reset your password: ${url}`,
+        template: 'password-reset',
         variables: {
           name: user.firstName + ' ' + user.lastName,
           url,

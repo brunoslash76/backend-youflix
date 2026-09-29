@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from '../config/index.js';
+import { MailerModule } from '../mailer/mailer.module.js';
 import { User } from '../user/entities/user.entity.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
@@ -21,6 +22,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
       signOptions: { expiresIn: config.jwt.accessTokenExpiresIn },
     }),
     TypeOrmModule.forFeature([User, Tokens]),
+    MailerModule,
   ],
 })
 export class AuthModule { }

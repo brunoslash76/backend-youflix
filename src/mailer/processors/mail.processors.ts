@@ -1,5 +1,6 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
+import FormData from "form-data";
 import Mailgun from "mailgun.js";
 import { config } from "../../config";
 
@@ -7,7 +8,7 @@ interface EmailJobData {
   to: string;
   subject: string;
   template: string;
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
 }
 
 @Processor('mail-queue')
@@ -15,9 +16,7 @@ export class MailProcessor extends WorkerHost {
   private message;
   private domain: string;
 
-  constructor(
-
-  ) { 
+  constructor() {
     super();
 
     const mailgun = new Mailgun(FormData);
@@ -25,7 +24,8 @@ export class MailProcessor extends WorkerHost {
     this.message = mailgun.client({
       username: 'api',
       key: config.mailgun.apiKey!,
-    })
+      url: config.mailgun.baseUrl,
+    });
 
     this.domain = config.mailgun.domain!;
   }
@@ -38,7 +38,6 @@ export class MailProcessor extends WorkerHost {
       subject,
       template,
       'h:X-Mailgun-Variables': JSON.stringify(variables),
-    })
+    });
   }
-
 }

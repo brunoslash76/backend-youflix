@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { type FastifyRequest } from 'fastify';
 import { Repository } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { ACCESS_TOKEN_COOKIE } from '../utils/auth-cookies.util.js';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -16,7 +17,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
 
-    const token = request.cookies.access_token;
+    const token = request.cookies[ACCESS_TOKEN_COOKIE];
 
     if (!token) throw new UnauthorizedException('Access denied!');
 
