@@ -32,7 +32,10 @@
     "docker:exec:dev": "docker compose exec app bash",
     "migration:generate": "typeorm-ts-node-esm migration:generate src/migrations/Init -d src/config/data-source.ts",
     "migration:run": "typeorm-ts-node-esm migration:run -d src/config/data-source.ts",
-    "migration:run:prod": "typeorm migration:run -d dist/config/data-source.js"
+    "migration:run:prod": "typeorm migration:run -d dist/config/data-source.js",
+    "docker:build:prod": "docker build -f Dockerfile.prod -t youflix-backend:latest .",
+    "k8s:dev:up": "bash scripts/k8s-dev.sh up",
+    "k8s:dev:down": "bash scripts/k8s-dev.sh down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",
