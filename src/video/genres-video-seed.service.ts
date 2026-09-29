@@ -22,7 +22,6 @@ export class GenresVideoSeedService implements OnModuleInit {
       this.logger.log('Genres seeded successfully');
     } catch (error) {
       this.logger.error('Error seeding genres', error);
-      throw error;
     }
   }
 }

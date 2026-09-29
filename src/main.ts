@@ -16,6 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
     instrument: ObserveInstrument,
   });
+  
+  app.enableShutdownHooks()
 
   await app.register(fastifyCookie, {
     secret: COOKIE_SECRET,

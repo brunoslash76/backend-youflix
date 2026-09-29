@@ -4,11 +4,19 @@ import { PublicRoute } from './decorators/public-route.decorator.js';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
   @Get()
   @PublicRoute()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('health')
+  @PublicRoute()
+  health() {
+    return {
+      status: 'ok',
+    }
   }
 }

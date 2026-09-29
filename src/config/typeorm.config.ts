@@ -12,6 +12,6 @@ export const typeormConfig = (
   password: config.database.password,
   database: config.database.name,
   entities,
-  synchronize: true,
+  synchronize: process.env.TYPEORM_SYNC === 'true',
   ...overrides,
 } as TypeOrmModuleOptions);

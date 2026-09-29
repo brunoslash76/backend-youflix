@@ -15,7 +15,7 @@
                 ]
             }
         },
-        "/auth/health": {
+        "/health": {
             "get": {
                 "operationId": "AuthController_health",
                 "parameters": [],

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: youflix-backend-config
+  namespace: youflix-backend
+data: 
+  PORT: "3000"
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: youflix
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  AWS_S3_REGION: us-east-1
+  AWS_S3_ENDPOINT: http://minio:9000
+  AWS_S3_PUBLIC_ENDPOINT: http://localhost:9000
+  AWS_S3_BUCKET: youflix
+  FRONTEND_URL: https://app.youflix.local
+  MAILGUN_BASE_URL: https://api.mailgun.net
+  MAILGUN_DOMAIN: mg.youflix.local

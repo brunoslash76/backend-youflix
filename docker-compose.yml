@@ -35,6 +35,7 @@ services:
       - .env
     environment:
       NODE_ENV: development
+      TYPEORM_SYNC: "true"
       PORT: 3000
       POSTGRES_HOST: db
       DATABASE_URL: postgres://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD:-app_password}@db:5432/${POSTGRES_DB:-app_db}

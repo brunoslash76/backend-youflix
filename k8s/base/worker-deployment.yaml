@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youflix-backend-worker
+  namespace: youflix-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youflix-backend-worker
+  template:
+    metadata:
+      labels:
+        app: youflix-backend-worker
+    spec:
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        - name: migrate
+          image: youflix-backend:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+                node ./node_modules/typeorm/cli.js migration:run -d dist/config/data-source.js && exit 0
+                echo "migration failed, retrying..."
+                sleep 2
+              done
+              exit 1
+          envFrom:
+            - configMapRef: { name: youflix-backend-config }
+            - secretRef: { name: youflix-secrets }
+      containers:
+        - name: worker
+          image: youflix-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "dist/worker"]
+          envFrom:
+            - configMapRef: { name: youflix-backend-config }
+            - secretRef: { name: youflix-secrets }
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: APP_ROLE
+              value: worker
+            - name: TRANSCODE_TMP
+              value: /tmp/transcode
+          volumeMounts:
+            - name: transcode-tmp
+              mountPath: /tmp/transcode
+          resources:
+            requests: { cpu: "500m", memory: "1Gi" }
+            limits: { cpu: "2000m", memory: "2Gi" }
+      volumes:
+        - name: transcode-tmp
+          emptyDir: { sizeLimit: 20Gi }
