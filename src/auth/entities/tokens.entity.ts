@@ -5,8 +5,9 @@ export class Tokens {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar' })
-  refreshToken: string;
+  @Column({ type: 'varchar', length: 64 })
+  @Index({ unique: true})
+  refreshTokenHash: string;
 
   @Column({ type: 'boolean', default: false })
   isUsed: boolean;
@@ -20,6 +21,10 @@ export class Tokens {
 
   @Column()
   isRevoked: boolean;
+
+  @Column({ type: 'timestamptz' })
+  @Index()
+  expiresAt: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

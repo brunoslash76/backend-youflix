@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -14,6 +15,10 @@ import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{
+      ttl: 60_000,
+      limit: 60,
+    }]),
     TypeOrmModule.forRoot(typeormConfig(ENTITIES)),
     BullModule.forRootAsync({
       useFactory: () => ({

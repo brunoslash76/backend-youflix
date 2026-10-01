@@ -5,10 +5,10 @@ import type { FastifyRequest } from 'fastify';
 import { type JwtPayload } from 'jsonwebtoken';
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { Repository } from "typeorm";
+import { config } from "../../config";
 import { User } from "../../user/entities/user.entity";
 import { ACCESS_TOKEN_COOKIE } from "../utils/auth-cookies.util.js";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
-    if (!JWT_SECRET) throw new Error('JWT_SECRET is not set');
+    if (!config.jwt.secret) throw new Error('JWT_SECRET is not set');
 
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -25,16 +25,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
       ]),
       ignoreExpiration: false,
-      secretOrKey: JWT_SECRET,
+      secretOrKey: config.jwt.secret,
     })
   }
 
   async validate(payload: JwtPayload) {
-    if (!payload) throw new UnauthorizedException()
+    if (typeof payload?.sub !== 'string' || payload?.type !== 'access') throw new UnauthorizedException()
 
     try {
       const user = await this.userRepository.findOneBy({ id: payload.sub });
-      if (!user) throw new UnauthorizedException();
+      if (!user || !user.isActive) throw new UnauthorizedException();
 
       const { password: _password, refreshToken: _refreshToken, ...safeUser } = user;
       return safeUser;

@@ -1,13 +1,11 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { MailerService } from './mailer.service';
 
 @Module({
   providers: [MailerService],
   exports: [MailerService],
   imports: [
-    JwtModule,
     BullModule.registerQueue({
       name: 'mail-queue',
     })

@@ -14,6 +14,7 @@ export interface CONFIG  {
     refreshTokenSecret: string | undefined
     accessTokenExpiresIn: number | undefined
     refreshTokenExpiresIn: number | undefined
+    activationTokenSecret: string | undefined
   },
   cookie: {
     secret: string | undefined
@@ -62,6 +63,7 @@ export const config: CONFIG = {
     refreshTokenSecret: checkEnvVarAvailability('REFRESH_TOKEN_SECRET'),
     accessTokenExpiresIn: 15 * 60,
     refreshTokenExpiresIn: 7 * 24 * 60 * 60,
+    activationTokenSecret: checkEnvVarAvailability('ACTIVATION_TOKEN_SECRET'),
   },
   cookie: {
     secret: checkEnvVarAvailability('COOKIE_SECRET'),

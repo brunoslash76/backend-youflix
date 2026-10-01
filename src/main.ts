@@ -13,10 +13,14 @@ const COOKIE_SECRET = config.cookie.secret;
 const PORT = Number(process.env.PORT ?? 3000);
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
-    instrument: ObserveInstrument,
-  });
-  
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ trustProxy: 'uniquelocal' }),
+    {
+      instrument: ObserveInstrument,
+    }
+  );
+
   app.enableShutdownHooks()
 
   await app.register(fastifyCookie, {
@@ -34,6 +38,11 @@ async function bootstrap() {
     }
   })
 
+
+  app.enableCors({
+    origin: config.frontendUrl,
+    credentials: true,
+  })
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
 
   const reflector = app.get(Reflector)

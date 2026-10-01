@@ -8,11 +8,10 @@ import { User } from '../user/entities/user.entity.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { Tokens } from './entities/tokens.entity.js';
-import { AuthGuard } from './guards/auth.guard.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 @Module({
-  providers: [AuthService, JwtStrategy, AuthGuard],
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService, PassportModule, JwtModule],
   imports: [

@@ -1,6 +1,7 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { TokenCleanupModule } from "./auth/token-cleanup/token-cleanup.module";
 import { config } from "./config";
 import { ENTITIES } from "./config/entities";
 import { typeormConfig } from "./config/typeorm.config";
@@ -29,6 +30,7 @@ import { VideoProcessingModule } from "./video/video-processing.module";
     }),
     VideoProcessingModule,
     MailProcessingModule,
+    TokenCleanupModule,
   ],
 })
 export class WorkerModule { }
