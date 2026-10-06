@@ -1,3 +1,4 @@
+import { ApiHideProperty } from "@nestjs/swagger";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users')
@@ -14,6 +15,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @ApiHideProperty()
   @Column({ nullable: false, select: false })
   password: string;
 
@@ -26,6 +28,7 @@ export class User {
   @Column({ default: false })
   isActive: boolean;
 
+  @ApiHideProperty()
   @Column({ nullable: true, default: null, select: false })
   refreshToken: string;
 

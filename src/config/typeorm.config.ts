@@ -1,4 +1,5 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { join } from "path";
 import { config } from ".";
 
 export const typeormConfig = (
@@ -12,6 +13,7 @@ export const typeormConfig = (
   password: config.database.password,
   database: config.database.name,
   entities,
-  synchronize: process.env.TYPEORM_SYNC === 'true',
+  synchronize: false,
+  migrations: [join(__dirname, '../migrations/*.{ts,js}')],
   ...overrides,
 } as TypeOrmModuleOptions);

@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiCookieAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiCookieAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { PublicRoute } from '../decorators/public-route.decorator';
 import { User } from '../user/entities/user.entity';
 import { CreateUploadResponseDto } from './dtos/response-upload.dto';
 import { UploadVideoDto } from './dtos/upload-video.dto';
+import { VideoListResponseDto } from './dtos/video-list.dto';
 import { Video } from './entities/video.entity';
 import { VideoService } from './video.service';
 
@@ -12,7 +13,7 @@ import { VideoService } from './video.service';
 @ApiTags('video')
 @Controller('video')
 export class VideoController {
-  constructor(private readonly videoService: VideoService) {}
+  constructor(private readonly videoService: VideoService) { }
 
 
   @Post('upload')
@@ -35,6 +36,7 @@ export class VideoController {
     summary: 'Complete a video upload',
     description: 'Complete a video upload',
   })
+  @ApiParam({ name: 'publicId', example: 'V1StGXR8_Z5jdHi6B' })
   @ApiOkResponse({ type: CreateUploadResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid access_token' })
   @ApiBadRequestResponse({ description: 'Invalid publicId' })
@@ -44,8 +46,11 @@ export class VideoController {
 
   @Get()
   @PublicRoute()
-  @ApiOperation({ summary: 'List public videos', description: 'Paginated list of public, completed videos'})
-  listVideos(
+  @ApiOperation({ summary: 'List public videos', description: 'Paginated list of public, completed videos' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Defaults to 1' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, description: 'Defaults to 20' })
+  @ApiOkResponse({ type: VideoListResponseDto }) 
+  async listVideos(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -58,6 +63,7 @@ export class VideoController {
     summary: 'Get a video by publicId',
     description: 'Get a video by publicId',
   })
+  @ApiParam({ name: 'publicId', example: 'V1StGXR8_Z5jdHi6B' })
   @ApiOkResponse({ type: Video })
   @ApiNotFoundResponse({ description: 'Video not found' })
   getVideo(

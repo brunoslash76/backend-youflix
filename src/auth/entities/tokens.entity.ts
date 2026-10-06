@@ -6,7 +6,7 @@ export class Tokens {
   id: string;
 
   @Column({ type: 'varchar', length: 64 })
-  @Index({ unique: true})
+  @Index('UQ_tokens_refreshTokenHash', { unique: true})
   refreshTokenHash: string;
 
   @Column({ type: 'boolean', default: false })
@@ -16,14 +16,14 @@ export class Tokens {
   userId: string;
 
   @Column()
-  @Index()
+  @Index('IDX_tokens_tokenFamily')
   tokenFamily: string;
 
   @Column()
   isRevoked: boolean;
 
   @Column({ type: 'timestamptz' })
-  @Index()
+  @Index('IDX_tokens_expiresAt')
   expiresAt: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })

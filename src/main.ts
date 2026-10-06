@@ -54,10 +54,17 @@ async function bootstrap() {
     .setVersion('1.0')
     .addServer(process.env.API_PUBLIC_URL ?? `http://localhost:${PORT}`, 'Current environment')
     .addCookieAuth('access_token')
+    .addCookieAuth('refresh_token', { type: 'apiKey', in: 'cookie', name: 'refresh_token' }, 'refresh')
+    .addTag('auth', 'Registration, activation, and session management')
+    .addTag('video', 'Uploads and catalog')
+    .addTag('genre', 'Video genres')
+    .addTag('health', 'Liveness probes')
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig)
-  SwaggerModule.setup('api', app, document)
+  if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+    const document = SwaggerModule.createDocument(app, swaggerConfig)
+    SwaggerModule.setup('api', app, document)
+  }
 
   await app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
