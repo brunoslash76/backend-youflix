@@ -78,12 +78,15 @@ export class UserService {
       throw new InternalServerErrorException('An error occurred while deleting the account');
     }
   }
+
   async findPublicById(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id, isActive: true },
       select: { id: true, firstName: true, lastName: true, createdAt: true },
     });
+
     if (!user) throw new NotFoundException('User not found');
+
     return user;
   }
   async listUsers(page = 1, limit = 20) {
@@ -92,15 +95,20 @@ export class UserService {
       skip: (page - 1) * limit,
       take: limit,
     });
+
     return { items, total, page, limit };
   }
   async adminUpdateUser(id: string, dto: AdminUpdateUserDto) {
     try {
       if (Object.keys(dto).length === 0) throw new BadRequestException('No fields to update');
+
       await this.usersRepository.update(id, dto);
+
       const user = await this.usersRepository.findOneBy({ id });
+
       if (!user) throw new NotFoundException('User not found');
       if (dto.isActive === false) await this.revokeAllSessions(id);
+
       return { success: true, data: user };
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error;
@@ -110,6 +118,7 @@ export class UserService {
   }
   async adminDeleteUser(id: string, requesterId: string) {
     if (id === requesterId) throw new BadRequestException('Use DELETE /user/me to delete your own account');
+    
     return this.deleteAccount(id);
   }
   private async revokeAllSessions(userId: string) {
