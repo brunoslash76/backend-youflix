@@ -10,6 +10,8 @@ import { config } from './config/index.js';
 import { typeormConfig } from './config/typeorm.config.js';
 import { MailerModule } from './mailer/mailer.module';
 import { ObserveModule } from './observe.js';
+import { RedisModule } from './redis/redis.module.js';
+import { SearchHistoryModule } from './search-history/search-history.module.js';
 import { UserModule } from './user/user.module.js';
 import { VideoModule } from './video/video.module';
 
@@ -40,6 +42,8 @@ import { VideoModule } from './video/video.module';
     UserModule,
     MailerModule,
     VideoModule,
+    RedisModule,
+    SearchHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

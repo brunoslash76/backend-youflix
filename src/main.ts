@@ -59,6 +59,7 @@ async function bootstrap() {
     .addTag('video', 'Uploads and catalog')
     .addTag('genre', 'Video genres')
     .addTag('health', 'Liveness probes')
+    .addTag('search-history', 'Search history')
     .build();
 
   if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
