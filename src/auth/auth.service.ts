@@ -19,6 +19,9 @@ const REFRESH_TOKEN_TYPE = 'refresh';
 const hashRefreshToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 
+const refreshTokenExpiresAt = () =>
+  new Date(Date.now() + config.jwt.refreshTokenExpiresIn! * 1000);
+
 
 @Injectable()
 export class AuthService {
@@ -202,6 +205,7 @@ export class AuthService {
         tokenFamily: tokenRecord.tokenFamily,
         isUsed: false,
         isRevoked: false,
+        expiresAt: refreshTokenExpiresAt(),
       });
 
       await this.tokensRepository.save(newTokenRecord);
@@ -254,6 +258,7 @@ export class AuthService {
         tokenFamily,
         isUsed: false,
         isRevoked: false,
+        expiresAt: refreshTokenExpiresAt(),
       });
 
       await this.tokensRepository.save(tokenRecord);
