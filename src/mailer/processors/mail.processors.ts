@@ -1,5 +1,6 @@
-import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Job } from "bullmq";
+import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
+import { Logger } from "@nestjs/common";
+import { Job, UnrecoverableError } from "bullmq";
 import FormData from "form-data";
 import Mailgun from "mailgun.js";
 import { config } from "../../config";
@@ -13,6 +14,7 @@ interface EmailJobData {
 
 @Processor('mail-queue')
 export class MailProcessor extends WorkerHost {
+  private readonly logger = new Logger(MailProcessor.name);
   private message;
   private domain: string;
 
@@ -32,12 +34,25 @@ export class MailProcessor extends WorkerHost {
 
   async process(job: Job<EmailJobData>) {
     const { to, subject, template, variables } = job.data;
-    return this.message.messages.create(this.domain, {
-      from: 'no-reply@' + this.domain,
-      to: [to],
-      subject,
-      template,
-      'h:X-Mailgun-Variables': JSON.stringify(variables),
-    });
+    try {
+      return await this.message.messages.create(this.domain, {
+        from: 'no-reply@' + this.domain,
+        to: [to],
+        subject,
+        template,
+        'h:X-Mailgun-Variables': JSON.stringify(variables),
+      });
+    } catch (error) {
+      const status = (error as { status?: unknown }).status;
+      if (typeof status === 'number' && status >= 400 && status < 500 && status !== 429) {
+        throw new UnrecoverableError(`Mailgun rejected (${status}): ${(error as Error).message}`);
+      }
+      throw error;
+    }
+  }
+
+  @OnWorkerEvent('failed')
+  onFailed(job: Job<EmailJobData>, error: Error) {
+    this.logger.error(`Mail job ${job.id} to ${job.data.to} failed (attempt ${job.attemptsMade}): ${error.message}`)
   }
 }

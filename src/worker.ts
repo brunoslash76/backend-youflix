@@ -12,7 +12,7 @@ async function bootstrap() {
   );
   app.enableShutdownHooks();
 
-  new Logger('Worker').log('Video worker started - consuming "video-queue"')
+  new Logger('Worker').log('Worker started - consuming "video-queue", "mail-queue", "token-cleanup-queue"')
 }
 
 void bootstrap().catch((error) => {

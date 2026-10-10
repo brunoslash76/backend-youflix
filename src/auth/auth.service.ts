@@ -16,7 +16,7 @@ const ACCOUNT_ACTIVATION_PURPOSE = 'account-activation';
 const ACCESS_TOKEN_TYPE = 'access';
 const REFRESH_TOKEN_TYPE = 'refresh';
 
-const hashRefreshToken = (token: string) => 
+const hashRefreshToken = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 
 
@@ -161,9 +161,9 @@ export class AuthService {
 
       if (payload.type !== REFRESH_TOKEN_TYPE) throw new UnauthorizedException('Invalid refresh token');
 
-      const tokenRecord = await this.tokensRepository.findOneBy({ 
+      const tokenRecord = await this.tokensRepository.findOneBy({
         refreshTokenHash: hashRefreshToken(oldTokenString)
-       });
+      });
 
       if (!tokenRecord || tokenRecord.isRevoked || tokenRecord.tokenFamily !== payload.family) {
         throw new UnauthorizedException('Access Denied');
@@ -238,7 +238,7 @@ export class AuthService {
       const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
       if (!isPasswordValid) throw new UnauthorizedException(message);
 
-      if (!user.isActive) throw new ForbiddenException('User is not active');
+      if (!user.isActive) throw new ForbiddenException({ message: 'User is not active', code: 'ACCOUNT_NOT_ACTIVATED' });
 
       const { password: _password, refreshToken: _refreshToken, ...u } = user
 
