@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { SearchHistoryModule } from '../search-history/search-history.module';
 import { GenresVideoSeedService } from './genres-video-seed.service';
 import { GenresController } from './genres.controller';
 import { GenresService } from './genres.service';
@@ -13,7 +14,8 @@ import { VideoService } from './video.service';
   controllers: [VideoController, GenresController],
   imports: [
     VideoSharedModule,
-    BullModule.registerQueue({ name: 'video-queue' })
+    SearchHistoryModule,
+    BullModule.registerQueue({ name: 'video-queue' }),
   ],
 })
 export class VideoModule { }

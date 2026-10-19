@@ -7,6 +7,7 @@ import { Video } from "../entities/video.entity";
 import { StorageService } from "../storage.service";
 import { ThumbnailService } from "../thumbnail.service";
 import { VideoStatus } from "../types/video-status.type";
+import { isSupportedMimeType, SupportedMimeType } from "../utils/ffmpeg-input-args.util";
 
 @Processor('video-queue')
 export class VideoProcessor extends WorkerHost {
@@ -28,28 +29,33 @@ export class VideoProcessor extends WorkerHost {
 
     try {
       video = await this.videoRepository.findOneBy({ publicId: job.data.publicId });
+      const contentType = video?.contentType as SupportedMimeType;
 
       if (!video) {
         this.logger.warn(`Video not found: ${job.data.publicId}`);
         return;
       }
 
+      if (!isSupportedMimeType(contentType)) {
+        this.logger.warn(`Unsupported MIME type: ${contentType}`);
+        throw new Error(`Unsupported content type: ${contentType}`);
+      }
+
       const inputUrl = await this.storageService.getInternalPresignedGetUrl(video.storageKey);
-      const duration = await this.thumbnailService.probeDurationSeconds(inputUrl);
+      const duration = await this.thumbnailService.probeDurationSeconds(inputUrl, contentType);
 
       const offsets = duration && duration > 4
         ? [duration * 0.1, duration * 0.35, duration * 0.6]
         : [0]
 
-      const frames = await this.thumbnailService.extractFrames(inputUrl, offsets);
+      const frames = await this.thumbnailService.extractFrames(inputUrl, contentType, offsets);
       const prefix = `thumbnails/${video.publicId}`;
 
       const keys: string[] = []
 
       for (const [index, jpeg] of frames.entries()) {
         const key = `${prefix}/frame-${index + 1}.jpg`;
-        await this.storageService.putObject(key, jpeg, 'image/jpeg');
-        await this.storageService.putObject(key, jpeg, 'image/jpeg', 'public, max-age=31536000, immutable');
+        await this.storageService.putObject(key, jpeg, 'image/jpeg', 'public, max-age=31536000, immutable')
         keys.push(key);
       }
 
@@ -59,8 +65,9 @@ export class VideoProcessor extends WorkerHost {
       await this.videoRepository.save(video);
       this.logger.log(`Processed video: ${job.data.publicId}`);
     } catch (error) {
-      if(job.attemptsMade + 1 >= (job.opts.attempts ?? 1)) { 
-        video!.status = VideoStatus.FAILED;
+      if (video && job.attemptsMade + 1 >= (job.opts.attempts ?? 1)) {
+        video.status = VideoStatus.FAILED;
+        await this.videoRepository.save(video);
       }
       this.logger.error(`Error processing video: ${job.data.publicId}`, error);
       throw error;

@@ -1,12 +1,14 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { BadRequestException, ForbiddenException, HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { nanoid } from 'nanoid';
 import { In, Repository } from 'typeorm';
 import { config } from '../config';
+import { SearchHistoryService } from '../search-history/search-history.service';
 import { User } from './../user/entities/user.entity';
 import { UploadVideoDto } from './dtos/upload-video.dto';
+import { VideoListResponseDto } from './dtos/video-list.dto';
 import { Genre } from './entities/genre.entity';
 import { Video } from './entities/video.entity';
 import { StorageService } from './storage.service';
@@ -16,14 +18,16 @@ const ALLOWED_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/webm'
 
 @Injectable()
 export class VideoService {
+  private readonly logger = new Logger(VideoService.name);
   constructor(
+    private readonly searchHistoryService: SearchHistoryService,
+    private readonly storageService: StorageService,
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
-    private readonly storageService: StorageService,
     @InjectQueue('video-queue')
-    private readonly videoQueue: Queue
+    private readonly videoQueue: Queue,
   ) { }
 
   async createUpload(user: User, videoMetadata: UploadVideoDto) {
@@ -79,6 +83,7 @@ export class VideoService {
 
       if (!video) throw new NotFoundException('Video not found');
       if (video.authorId !== user.id) throw new ForbiddenException();
+      if (video.status !== VideoStatus.AWAITING_UPLOAD) throw new ConflictException('Upload already completed');
       if (!video.storageKey) throw new NotFoundException('Missing storage key');
 
       const object = await this.storageService.headObject(video.storageKey);
@@ -153,7 +158,7 @@ export class VideoService {
     }
   }
 
-  async listVideos(page = 1, limit = 20) {
+  async listVideos(user?: User, page = 1, limit = 20): Promise<VideoListResponseDto> {
     try {
       const [videos, total] = await this.videoRepository.findAndCount({
         where: { isPublic: true, status: VideoStatus.READY },
@@ -166,27 +171,92 @@ export class VideoService {
       });
 
       const items = await Promise.all(
-        videos.map(async (video) => ({
-          publicId: video.publicId,
-          title: video.title,
-          genres: video.genres,
-          views: video.views,
-          createdAt: video.createdAt,
-          thumbnailUrl: video.thumbnailKey
-            ? await this.storageService.getPublicUrl(video.thumbnailKey)
-            : null,
-        })),
+        videos.map(async (video) => this.toListItem(video)),
       )
 
-      return { items, total, page, limit }
+      return { personalized: !!user, items, total, page, limit }
     } catch (error) {
       this.rethrowHttp(error, 'Failed to list videos');
+    }
+  }
+
+  async getFeed(user?: User, page = 1, limit = 20): Promise<VideoListResponseDto> {
+    try {
+      const total = await this.videoRepository.count({
+        where: { isPublic: true, status: VideoStatus.READY },
+      });
+
+      if (page > 1) {
+        const videos = await this.videoRepository.find({
+          where: { isPublic: true, status: VideoStatus.READY },
+          relations: { genres: true },
+          order: { createdAt: 'DESC' },
+          skip: (page - 1) * limit,
+          take: limit,
+        });
+
+        return {
+          personalized: false,
+          items: await Promise.all(videos.map(video => this.toListItem(video))),
+          total,
+          page,
+          limit,
+        }
+      }
+
+      const terms = user ? await this.searchHistoryService.findRecent(user.id) : []
+      const recommended = terms.length
+        ? await this.videoRepository.createQueryBuilder('video')
+          .leftJoinAndSelect('video.genres', 'genre')
+          .where('video.isPublic = true AND video.status = :status', { status: VideoStatus.READY })
+          .andWhere('video.title ILIKE ANY(ARRAY[:...patterns])', { patterns: terms.map(t => `%${t.replace(/[\\%_]/g, '\\$&')}%`) })
+          .orderBy('video.createdAt', 'DESC')
+          .take(limit)
+          .getMany()
+        : []
+
+      const recommendedIds = new Set(recommended.map(v => v.id))
+      const latest = await this.videoRepository.find({
+        where: { isPublic: true, status: VideoStatus.READY },
+        relations: { genres: true },
+        order: { createdAt: 'DESC' },
+        take: limit + recommended.length,
+      })
+
+      const videos = [
+        ...recommended,
+        ...latest.filter(v => !recommendedIds.has(v.id))
+      ].slice(0, limit)
+
+      return {
+        personalized: recommended.length > 0,
+        items: await Promise.all(videos.map(v => this.toListItem(v))),
+        total,
+        page,
+        limit,
+      }
+    } catch (error) {
+      this.rethrowHttp(error, 'Failed to get feed');
+    }
+  }
+
+  private async toListItem(video: Video) {
+    return {
+      publicId: video.publicId,
+      title: video.title,
+      genres: video.genres,
+      views: video.views,
+      createdAt: video.createdAt,
+      thumbnailUrl: video.thumbnailKey
+        ? await this.storageService.getPublicUrl(video.thumbnailKey)
+        : null,
     }
   }
 
   private rethrowHttp(error: unknown, fallback: string): never {
     if (error instanceof HttpException) throw error;
     if (error instanceof Error) throw new InternalServerErrorException(error.message);
+    this.logger.error(fallback, error);
     throw new InternalServerErrorException(fallback);
   }
 }

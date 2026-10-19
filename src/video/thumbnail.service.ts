@@ -3,15 +3,16 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileAsync } from "./utils/exec-file-async.util";
-
+import { ffmpegInputArgs, REMOTE_INPUT_PROTOCOLS, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
 
 @Injectable()
 export class ThumbnailService {
-  async probeDurationSeconds(inputUrl: string): Promise<number | null> {
+  async probeDurationSeconds(inputUrl: string, contentType: SupportedMimeType): Promise<number | null> {
     const { stdout } = await execFileAsync(
       'ffprobe',
       [
         '-v', 'error',
+        ...ffmpegInputArgs(contentType, REMOTE_INPUT_PROTOCOLS),
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:noKey=1',
         inputUrl,
@@ -23,7 +24,7 @@ export class ThumbnailService {
     return Number.isFinite(duration) ? duration : null;
   }
 
-  async extractFrames(inputUrl: string, atSeconds: number[]): Promise<Buffer[]> {
+  async extractFrames(inputUrl: string, contentType: SupportedMimeType, atSeconds: number[]): Promise<Buffer[]> {
     const dir = await mkdtemp(join(tmpdir(), 'you-flix-'));
 
     try {
@@ -35,6 +36,7 @@ export class ThumbnailService {
           [
             '-hide_banner', '-loglevel', 'error', '-y',
             '-ss', at.toFixed(3),
+            ...ffmpegInputArgs(contentType, REMOTE_INPUT_PROTOCOLS),
             '-i', inputUrl,
             '-frames:v', '1',
             '-vf', 'scale=1280:-2',

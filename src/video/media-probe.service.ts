@@ -1,15 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { ProbeResult } from "./types/probe-result.type";
 import { execFileAsync } from "./utils/exec-file-async.util";
-
-
-
+import { ffmpegInputArgs, LOCAL_INPUT_PROTOCOLS, type SupportedMimeType } from "./utils/ffmpeg-input-args.util";
 
 @Injectable()
 export class MediaProbeService {
-  async probe(inputPath: string): Promise<ProbeResult> {
+  async probe(inputPath: string, contentType: SupportedMimeType): Promise<ProbeResult> {
     const { stdout } = await execFileAsync('ffprobe', [
       '-v', 'error',
+      ...ffmpegInputArgs(contentType, LOCAL_INPUT_PROTOCOLS),
       '-print_format', 'json',
       '-show_format',
       '-show_streams',
@@ -21,7 +20,7 @@ export class MediaProbeService {
     const probe = JSON.parse(stdout);
     const video = probe.streams?.find((stream: any) => stream.codec_type === 'video')
 
-    if (!video) throw new Error('File contains no video stram')
+    if (!video) throw new Error('File contains no video stream')
 
     const [num, den] = String(video.r_frame_rate ?? '0/1').split('/').map(Number);
 

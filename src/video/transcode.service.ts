@@ -3,8 +3,10 @@ import { spawn } from "child_process";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { Rung, SEGMENT_SECONDS } from "./constants/transcode.constants";
+import { ffmpegInputArgs, LOCAL_INPUT_PROTOCOLS, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
 
 interface TranscodeRenditionOptions {
+  contentType: SupportedMimeType;
   sourcePath: string;
   outDir: string;
   rung: Rung;
@@ -22,6 +24,7 @@ export class TranscodeService {
       rung,
       hasAudio,
       durationSeconds,
+      contentType,
       onProgress,
     } = opts
 
@@ -29,6 +32,7 @@ export class TranscodeService {
 
     const args = [
       '-hide_banner', '-loglevel', 'error', '-y',
+      ...ffmpegInputArgs(contentType, LOCAL_INPUT_PROTOCOLS),
       '-i', sourcePath,
       '-vf', `scale=-2:${rung.height}`,
       '-c:v', 'libx264',

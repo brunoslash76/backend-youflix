@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiCookieAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { PublicRoute } from '../decorators/public-route.decorator';
 import { User } from '../user/entities/user.entity';
@@ -25,6 +26,8 @@ export class VideoController {
   @ApiCreatedResponse({ type: CreateUploadResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid access_token' })
   @ApiBadRequestResponse({ description: 'Invalid metadata, content type, or genre ids' })
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60 * 60_000 } })
   async uploadVideo(@CurrentUser() user: User, @Body() body: UploadVideoDto) {
     return this.videoService.createUpload(user, body);
   }
@@ -49,12 +52,22 @@ export class VideoController {
   @ApiOperation({ summary: 'List public videos', description: 'Paginated list of public, completed videos' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Defaults to 1' })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, description: 'Defaults to 20' })
-  @ApiOkResponse({ type: VideoListResponseDto }) 
+  @ApiOkResponse({ type: VideoListResponseDto })
   async listVideos(
+    @CurrentUser() user?: User,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.videoService.listVideos(Number(page) || 1, Number(limit) || 20);
+    return this.videoService.listVideos(user, Number(page) || 1, Number(limit) || 20);
+  }
+
+  @Get('feed')
+  @PublicRoute()
+  @ApiOperation({ summary: 'Home feed', description: 'Personalized when logged in, latest videos otherwise' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20, description: 'Defaults to 20' })
+  @ApiOkResponse({ type: VideoListResponseDto })
+  getFeed(@CurrentUser() user?: User, @Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.videoService.getFeed(user, Number(page) || 1, Number(limit) || 20);
   }
 
   @Get(':publicId')
