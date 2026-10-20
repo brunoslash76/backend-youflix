@@ -89,6 +89,7 @@ export class UserService {
 
     return user;
   }
+
   async listUsers(page = 1, limit = 20) {
     const [items, total] = await this.usersRepository.findAndCount({
       order: { createdAt: 'DESC' },
@@ -98,6 +99,7 @@ export class UserService {
 
     return { items, total, page, limit };
   }
+
   async adminUpdateUser(id: string, dto: AdminUpdateUserDto) {
     try {
       if (Object.keys(dto).length === 0) throw new BadRequestException('No fields to update');
@@ -116,12 +118,26 @@ export class UserService {
       throw new InternalServerErrorException('An error occurred while updating the user');
     }
   }
+
   async adminDeleteUser(id: string, requesterId: string) {
     if (id === requesterId) throw new BadRequestException('Use DELETE /user/me to delete your own account');
     
     return this.deleteAccount(id);
   }
+
   private async revokeAllSessions(userId: string) {
     await this.tokensRepository.update({ userId }, { isRevoked: true, isUsed: true });
+  }
+
+  async validateUsername(username: string): Promise<{ success: boolean }> {
+    try {
+      const existing = await this.usersRepository.findOneBy({ username })
+      if (existing) throw new ConflictException('Username already in use')
+      return { success: true };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) throw error;
+      console.error(String(error));
+      throw new InternalServerErrorException('An error occurred while validating the username');
+    }
   }
 }
