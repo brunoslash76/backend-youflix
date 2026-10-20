@@ -19,10 +19,17 @@ import { VideoStatus } from './types/video-status.type';
 const ALLOWED_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
-
+type ThumbnailSize = 'small' | 'medium' | 'large'
+const THUMBNAIL_WIDTHS: Record<ThumbnailSize, number> = {
+  small: 320,
+  medium: 640,
+  large: 1280,
+}
+const THUMBNAIL_SIZES = Object.freeze(['small', 'medium', 'large'])
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
+
   constructor(
     private readonly searchHistoryService: SearchHistoryService,
     private readonly storageService: StorageService,
@@ -159,9 +166,7 @@ export class VideoService {
         isPublic: video.isPublic,
         genres: video.genres,
         watchUrl: `${config.frontendUrl}/watch?v=${publicId}`,
-        thumbnailUrl: video.thumbnailKey
-          ? await this.storageService.getPublicUrl(video.thumbnailKey)
-          : null,
+        thumbnailUrl: this.thumbnailUrl(video, 'large'),
         thumbnailOptions: isOwner
           ? video.thumbnailCandidateKeys.map(key => this.storageService.getPublicUrl(key))
           : [],
@@ -182,6 +187,7 @@ export class VideoService {
         where: { isPublic: true, status: VideoStatus.READY },
         relations: {
           genres: true,
+          author: true,
         },
         order: { createdAt: 'DESC' },
         skip: (page - 1) * limit,
@@ -189,7 +195,7 @@ export class VideoService {
       });
 
       const items = await Promise.all(
-        videos.map(async (video) => this.toListItem(video)),
+        videos.map(async (video) => this.toListItem(video, 'small')),
       )
 
       return { personalized: !!user, items, total, page, limit }
@@ -207,7 +213,7 @@ export class VideoService {
       if (page > 1) {
         const videos = await this.videoRepository.find({
           where: { isPublic: true, status: VideoStatus.READY },
-          relations: { genres: true },
+          relations: { genres: true, author: true },
           order: { createdAt: 'DESC' },
           skip: (page - 1) * limit,
           take: limit,
@@ -215,7 +221,7 @@ export class VideoService {
 
         return {
           personalized: false,
-          items: await Promise.all(videos.map(video => this.toListItem(video))),
+          items: await Promise.all(videos.map(video => this.toListItem(video, 'small'))),
           total,
           page,
           limit,
@@ -226,6 +232,7 @@ export class VideoService {
       const recommended = terms.length
         ? await this.videoRepository.createQueryBuilder('video')
           .leftJoinAndSelect('video.genres', 'genre')
+          .leftJoinAndSelect('video.author', 'author')
           .where('video.isPublic = true AND video.status = :status', { status: VideoStatus.READY })
           .andWhere('video.title ILIKE ANY(ARRAY[:...patterns])', { patterns: terms.map(t => `%${t.replace(/[\\%_]/g, '\\$&')}%`) })
           .orderBy('video.createdAt', 'DESC')
@@ -236,7 +243,7 @@ export class VideoService {
       const recommendedIds = new Set(recommended.map(v => v.id))
       const latest = await this.videoRepository.find({
         where: { isPublic: true, status: VideoStatus.READY },
-        relations: { genres: true },
+        relations: { genres: true, author: true },
         order: { createdAt: 'DESC' },
         take: limit + recommended.length,
       })
@@ -248,7 +255,7 @@ export class VideoService {
 
       return {
         personalized: recommended.length > 0,
-        items: await Promise.all(videos.map(v => this.toListItem(v))),
+        items: await Promise.all(videos.map(v => this.toListItem(v, 'small'))),
         total,
         page,
         limit,
@@ -281,6 +288,8 @@ export class VideoService {
         video.thumbnailKey = key
       }
 
+      await this.storeThumbnailVariants(video)
+
       const { title, description } = dto
 
       Object.assign(video, { title, description, genres, isPublic: true })
@@ -291,16 +300,19 @@ export class VideoService {
     }
   }
 
-  private async toListItem(video: Video) {
+  private async toListItem(video: Video, size: ThumbnailSize) {
+    const author = {
+      id: video.author.id,
+      username: video.author.username,
+    }
     return {
       publicId: video.publicId,
       title: video.title,
       genres: video.genres,
       views: video.views,
+      author,
       createdAt: video.createdAt,
-      thumbnailUrl: video.thumbnailKey
-        ? await this.storageService.getPublicUrl(video.thumbnailKey)
-        : null,
+      thumbnailUrl: this.thumbnailUrl(video, size),
     }
   }
 
@@ -333,5 +345,37 @@ export class VideoService {
     const key = `thumbnails/${publicId}/custom-${nanoid(8)}.jpg`
     await this.storageService.putObject(key, jpeg, 'image/jpeg', 'public, max-age=31536000, immutable')
     return key
+  }
+
+  private thumbnailUrl(video: Video, size: 'small' | 'medium' | 'large') {
+    const key = {
+      small: video.thumbnailSmallKey,
+      medium: video.thumbnailMediumKey,
+      large: video.thumbnailLargeKey,
+    }[size]
+    return key ? this.storageService.getPublicUrl(key) : null
+  }
+
+  private async storeThumbnailVariants(video: Video) {
+    if (!video.thumbnailKey) return
+
+    try {
+      const sourceUrl = await this.storageService.getInternalPresignedGetUrl(video.thumbnailKey)
+      const id = nanoid(12)
+
+      const [small, medium, large] = await Promise.all(THUMBNAIL_SIZES.map(async (size) => {
+        const jpeg = await this.thumbnailService.resizeJpeg(sourceUrl, THUMBNAIL_WIDTHS[size as ThumbnailSize])
+        const key = `thumbnails/${video.publicId}/${size}-${id}.jpg`
+        await this.storageService.putObject(key, jpeg, 'image/jpeg', 'public, max-age=31536000, immutable')
+        return key
+      }))
+      video.thumbnailSmallKey = small
+      video.thumbnailMediumKey = medium
+      video.thumbnailLargeKey = large
+      await this.videoRepository.save(video)
+    } catch (error) {
+      this.logger.error('Failed to store thumbnail variants', error)
+      throw new InternalServerErrorException('Failed to store thumbnail variants')
+    }
   }
 }

@@ -46,7 +46,7 @@ export class ThumbnailService {
             '-i', inputUrl,
             '-frames:v', '1',
             '-vf', 'thumbnail=60,scale=1280:-2',
-            '-q:v', '3', 
+            '-q:v', '3',
             outPath,
           ],
           { timeout: 120_000 }
@@ -76,6 +76,25 @@ export class ThumbnailService {
         '-f', demuxer, '-protocol_whitelist', REMOTE_INPUT_PROTOCOLS,
         '-i', inputUrl,
         '-vf', "scale='min(1280,iw)':-2",
+        '-frames:v', '1', '-q:v', '3',
+        outPath,
+      ], { timeout: 30_000 })
+      return await readFile(outPath)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  }
+
+  async resizeJpeg(inputUrl: string, maxWidth: number): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'you-flix-'))
+    const outPath = join(dir, `thumb-${maxWidth}.jpg`)
+
+    try {
+      await execFileAsync('ffmpeg', [
+        '-hide_banner', '-loglevel', 'error', '-y',
+        '-f', 'jpeg_pipe', '-protocol_whitelist', REMOTE_INPUT_PROTOCOLS,
+        '-i', inputUrl,
+        '-vf', `scale='min(${maxWidth},iw)':-2:flags=lanczos`,
         '-frames:v', '1', '-q:v', '3',
         outPath,
       ], { timeout: 30_000 })

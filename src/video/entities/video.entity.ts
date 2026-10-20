@@ -67,6 +67,15 @@ export class Video {
   @Column({ type: 'text', array: true, default: '{}' })
   thumbnailCandidateKeys: string[];
 
+  @Column({ type: 'varchar', nullable: true })
+  thumbnailSmallKey: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  thumbnailMediumKey: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  thumbnailLargeKey: string | null;
+
   @Column({ type: 'enum', enum: VideoStatus, default: VideoStatus.AWAITING_UPLOAD })
   status: VideoStatus;
 
