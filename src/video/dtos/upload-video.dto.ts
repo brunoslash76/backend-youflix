@@ -1,37 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayMinSize, IsInt, IsMimeType, IsNotEmpty, IsString, IsUUID, Max, MaxLength, Min, MinLength } from "class-validator";
+import { IsInt, IsMimeType, IsNotEmpty, IsString, Max, MaxLength, Min } from "class-validator";
 
 export class UploadVideoDto {
   @ApiProperty({
-    example: 'My Fist Video',
-    minLength: 7,
-    maxLength: 255,
+    example: 'my-trip.mp4',
+    description: 'Original file name, used as the draft title',
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(7)
   @MaxLength(255)
-  title: string;
-
-  @ApiProperty({
-    example: 'A short clip for testing upload',
-    maxLength: 5000,
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(5000)
-  description: string;
-
-  @ApiProperty({
-    type: [String],
-    format: 'uuid',
-    example: ['123e4567-e89b-12d3-a456-426614174000'],
-    minItems: 1,
-    isArray: true,
-  })
-  @ArrayMinSize(1)
-  @IsUUID('4', { each: true })
-  genreIds: string[];
+  filename: string;
 
   @ApiProperty({
     example: 'video/mp4',

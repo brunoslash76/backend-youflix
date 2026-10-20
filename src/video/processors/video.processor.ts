@@ -45,7 +45,7 @@ export class VideoProcessor extends WorkerHost {
       const duration = await this.thumbnailService.probeDurationSeconds(inputUrl, contentType);
 
       const offsets = duration && duration > 4
-        ? [duration * 0.1, duration * 0.35, duration * 0.6]
+        ? [0.01, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].map(p => duration * p)
         : [0]
 
       const frames = await this.thumbnailService.extractFrames(inputUrl, contentType, offsets);
@@ -59,15 +59,24 @@ export class VideoProcessor extends WorkerHost {
         keys.push(key);
       }
 
-      video.thumbnailKey = keys[0];
-      video.status = VideoStatus.READY;
-      video.isPublic = true;
-      await this.videoRepository.save(video);
+      await this.videoRepository
+        .createQueryBuilder()
+        .update(Video)
+        .set({
+          status: VideoStatus.READY,
+          thumbnailCandidateKeys: keys,
+          thumbnailKey: () => `COALESCE("thumbnailKey", :firstKey)`,
+        })
+        .where('publicId = :publicId', { publicId: video.publicId })
+        .setParameter('firstKey', keys[0])
+        .execute();
       this.logger.log(`Processed video: ${job.data.publicId}`);
     } catch (error) {
       if (video && job.attemptsMade + 1 >= (job.opts.attempts ?? 1)) {
-        video.status = VideoStatus.FAILED;
-        await this.videoRepository.save(video);
+        await this.videoRepository.update(
+          { publicId: video.publicId },
+          { status: VideoStatus.FAILED }
+        );
       }
       this.logger.error(`Error processing video: ${job.data.publicId}`, error);
       throw error;

@@ -7,14 +7,18 @@ import { In, Repository } from 'typeorm';
 import { config } from '../config';
 import { SearchHistoryService } from '../search-history/search-history.service';
 import { User } from './../user/entities/user.entity';
+import { UpdateVideoDetailsDto } from './dtos/update-video-details.dto';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { VideoListResponseDto } from './dtos/video-list.dto';
 import { Genre } from './entities/genre.entity';
 import { Video } from './entities/video.entity';
 import { StorageService } from './storage.service';
+import { ThumbnailService } from './thumbnail.service';
 import { VideoStatus } from './types/video-status.type';
 
 const ALLOWED_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
+const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 @Injectable()
 export class VideoService {
@@ -22,6 +26,7 @@ export class VideoService {
   constructor(
     private readonly searchHistoryService: SearchHistoryService,
     private readonly storageService: StorageService,
+    private readonly thumbnailService: ThumbnailService,
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Genre)
@@ -30,15 +35,28 @@ export class VideoService {
     private readonly videoQueue: Queue,
   ) { }
 
+  async createThumbnailUpload(user: User, publicId: string, contentType: string, sizeBytes: number) {
+    try {
+      const video = await this.findOwned(user, publicId)
+
+      if (!IMAGE_TYPES.has(contentType) || sizeBytes > MAX_IMAGE_BYTES) {
+        throw new BadRequestException('Use JPEG, PNG or WebP up to 5 MB')
+      }
+      const key = `thumbnails/${video.publicId}/uploads/${nanoid(12)}`
+      const uploadUrl = await this.storageService.getPresignedPutUrl(key, contentType, sizeBytes)
+      return {
+        key,
+        uploadUrl,
+      }
+    } catch (error) {
+      this.rethrowHttp(error, 'Failed to create thumbnail upload');
+    }
+  }
+
   async createUpload(user: User, videoMetadata: UploadVideoDto) {
     try {
       if (!ALLOWED_MIME_TYPES.has(videoMetadata.contentType)) {
         throw new BadRequestException('Invalid video format');
-      }
-
-      const genres = await this.genreRepository.find({ where: { id: In(videoMetadata.genreIds) } });
-      if (genres.length !== videoMetadata.genreIds.length) {
-        throw new BadRequestException('One or more genres are invalid');
       }
 
       const publicId = nanoid(21);
@@ -47,14 +65,14 @@ export class VideoService {
       const video = this.videoRepository.create({
         authorId: user.id,
         publicId,
-        title: videoMetadata.title,
-        genres,
         storageKey,
         isPublic: false,
         status: VideoStatus.AWAITING_UPLOAD,
         contentType: videoMetadata.contentType,
         sizeBytes: videoMetadata.sizeBytes,
-        description: videoMetadata.description,
+        title: videoMetadata.filename.replace(/\.[^.]+$/, '').slice(0, 255),
+        description: '',
+        genres: [],
       });
 
       await this.videoRepository.save(video);
@@ -79,10 +97,7 @@ export class VideoService {
 
   async completeUpload(user: User, publicId: string) {
     try {
-      const video = await this.videoRepository.findOneBy({ publicId });
-
-      if (!video) throw new NotFoundException('Video not found');
-      if (video.authorId !== user.id) throw new ForbiddenException();
+      const video = await this.findOwned(user, publicId);
       if (video.status !== VideoStatus.AWAITING_UPLOAD) throw new ConflictException('Upload already completed');
       if (!video.storageKey) throw new NotFoundException('Missing storage key');
 
@@ -147,6 +162,9 @@ export class VideoService {
         thumbnailUrl: video.thumbnailKey
           ? await this.storageService.getPublicUrl(video.thumbnailKey)
           : null,
+        thumbnailOptions: isOwner
+          ? video.thumbnailCandidateKeys.map(key => this.storageService.getPublicUrl(key))
+          : [],
         author: {
           id: video.author.id,
           firstName: video.author.firstName,
@@ -240,6 +258,39 @@ export class VideoService {
     }
   }
 
+  async updateDetails(user: User, publicId: string, dto: UpdateVideoDetailsDto) {
+    try {
+      const video = await this.findOwned(user, publicId)
+
+      const genres = await this.genreRepository.find({ where: { id: In(dto.genreIds) } })
+
+      if (genres.length !== dto.genreIds.length) {
+        throw new BadRequestException('One or more genres are invalid')
+      }
+
+      if (dto.customThumbnailKey) {
+        if (!dto.customThumbnailKey.startsWith(`thumbnails/${publicId}/uploads/`)) {
+          throw new BadRequestException('Invalid thumbnail key')
+        }
+        video.thumbnailKey = await this.normalizeCustomThumbnail(dto.customThumbnailKey, publicId)
+      } else if (dto.thumbnailIndex !== undefined) {
+        const key = video.thumbnailCandidateKeys[dto.thumbnailIndex]
+
+        if (!key) throw new BadRequestException('Invalid thumbnail index')
+
+        video.thumbnailKey = key
+      }
+
+      const { title, description } = dto
+
+      Object.assign(video, { title, description, genres, isPublic: true })
+      await this.videoRepository.save(video)
+      return this.findByPublicId(publicId, user)
+    } catch (error) {
+      this.rethrowHttp(error, 'Failed to update video details');
+    }
+  }
+
   private async toListItem(video: Video) {
     return {
       publicId: video.publicId,
@@ -255,8 +306,32 @@ export class VideoService {
 
   private rethrowHttp(error: unknown, fallback: string): never {
     if (error instanceof HttpException) throw error;
-    if (error instanceof Error) throw new InternalServerErrorException(error.message);
     this.logger.error(fallback, error);
     throw new InternalServerErrorException(fallback);
+  }
+
+  private async findOwned(user: User, publicId: string) {
+    try {
+      const video = await this.videoRepository.findOneBy({ publicId })
+      if (!video) throw new NotFoundException('Video not found');
+      if (video.authorId !== user.id) throw new ForbiddenException();
+      return video;
+    } catch (error) {
+      this.rethrowHttp(error, 'Failed to find owned video');
+    }
+  }
+
+  private async normalizeCustomThumbnail(uploadKey: string, publicId: string) {
+    const object = await this.storageService.headObject(uploadKey)
+
+    if (!object?.ContentType)
+      throw new BadRequestException('Thumbnail not uploaded')
+
+    const url = await this.storageService.getInternalPresignedGetUrl(uploadKey)
+    const jpeg = await this.thumbnailService.imageToJpeg(url, object.ContentType)
+
+    const key = `thumbnails/${publicId}/custom-${nanoid(8)}.jpg`
+    await this.storageService.putObject(key, jpeg, 'image/jpeg', 'public, max-age=31536000, immutable')
+    return key
   }
 }

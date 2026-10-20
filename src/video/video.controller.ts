@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiCookieAuth, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { PublicRoute } from '../decorators/public-route.decorator';
 import { User } from '../user/entities/user.entity';
+import { CreateThumbnailUploadDto } from './dtos/create-thumbnail-upload.dto';
 import { CreateUploadResponseDto } from './dtos/response-upload.dto';
+import { UpdateVideoDetailsDto } from './dtos/update-video-details.dto';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { VideoListResponseDto } from './dtos/video-list.dto';
 import { Video } from './entities/video.entity';
@@ -16,6 +18,16 @@ import { VideoService } from './video.service';
 export class VideoController {
   constructor(private readonly videoService: VideoService) { }
 
+  @Post(':publicId/thumbnail/upload-url')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Get a presigned URL to upload a custom thumbnail' })
+  createThumbnailUpload(
+    @CurrentUser() user: User,
+    @Param('publicId') publicId: string,
+    @Body() body: CreateThumbnailUploadDto,
+  ) {
+    return this.videoService.createThumbnailUpload(user, publicId, body.contentType, body.sizeBytes);
+  }
 
   @Post('upload')
   @ApiCookieAuth()
@@ -45,6 +57,19 @@ export class VideoController {
   @ApiBadRequestResponse({ description: 'Invalid publicId' })
   completeUpload(@CurrentUser() user: User, @Param('publicId') publicId: string) {
     return this.videoService.completeUpload(user, publicId);
+  }
+
+  @Patch(':publicId')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Save video details and publish' })
+  @ApiParam({ name: 'publicId', example: 'V1StGXR8_Z5jdHi6B' })
+  @ApiBadRequestResponse({ description: 'Invalid details, genres or thumbnail' })
+  updateDetails(
+    @CurrentUser() user: User,
+    @Param('publicId') publicId: string,
+    @Body() body: UpdateVideoDetailsDto,
+  ) {
+    return this.videoService.updateDetails(user, publicId, body);
   }
 
   @Get()

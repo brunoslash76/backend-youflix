@@ -4,13 +4,19 @@ import { SearchHistoryModule } from '../search-history/search-history.module';
 import { GenresVideoSeedService } from './genres-video-seed.service';
 import { GenresController } from './genres.controller';
 import { GenresService } from './genres.service';
+import { ThumbnailService } from './thumbnail.service';
 import { VideoSharedModule } from './video-shared.module';
 import { VideoController } from './video.controller';
 import { VideoService } from './video.service';
 
 
 @Module({
-  providers: [VideoService, GenresService, GenresVideoSeedService],
+  providers: [
+    VideoService,
+    GenresService,
+    GenresVideoSeedService,
+    ThumbnailService,
+  ],
   controllers: [VideoController, GenresController],
   imports: [
     VideoSharedModule,
