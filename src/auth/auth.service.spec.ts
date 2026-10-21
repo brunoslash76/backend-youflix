@@ -46,6 +46,7 @@ describe('AuthService', () => {
     password: 'Test123',
     passwordConfirmation: 'Test123',
     phone: '1234567890',
+    username: 'test',
   }
 
   beforeEach(async () => {
@@ -116,6 +117,7 @@ describe('AuthService', () => {
       password: 'Test1234',
       passwordConfirmation: 'Test1234',
       phone: '1234567890',
+      username: 'test',
     }
 
     const { passwordConfirmation: _confirmation, ...userData } = signUpDTO;
