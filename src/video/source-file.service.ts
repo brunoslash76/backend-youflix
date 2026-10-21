@@ -25,4 +25,14 @@ export class SourceFileService {
       await rm(dir, { recursive: true, force: true })
     }
   }
+
+  async withWorkDir<T>(name: string, fn: (dir: string) => Promise<T>): Promise<T> {
+    const dir = join(this.root, `${name}-${randomUUID()}`)
+    await mkdir(dir, { recursive: true })
+    try {
+      return await fn(dir)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  }
 }

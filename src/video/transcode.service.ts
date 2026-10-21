@@ -3,28 +3,34 @@ import { spawn } from "child_process";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { Rung, SEGMENT_SECONDS } from "./constants/transcode.constants";
-import { ffmpegInputArgs, LOCAL_INPUT_PROTOCOLS, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
+import { ffmpegInputArgs, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
 
 interface TranscodeRenditionOptions {
   contentType: SupportedMimeType;
-  sourcePath: string;
+  source: string;
+  protocols: string;
   outDir: string;
   rung: Rung;
   hasAudio: boolean;
   durationSeconds: number;
+  threads: number;
   onProgress?: (pct: number) => void;
 }
+
+const RECONNECT_ARGS = ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5'];
 
 @Injectable()
 export class TranscodeService {
   async transcodeRendition(opts: TranscodeRenditionOptions): Promise<void> {
     const {
-      sourcePath,
+      source,
+      protocols,
       outDir,
       rung,
       hasAudio,
       durationSeconds,
       contentType,
+      threads,
       onProgress,
     } = opts
 
@@ -32,11 +38,13 @@ export class TranscodeService {
 
     const args = [
       '-hide_banner', '-loglevel', 'error', '-y',
-      ...ffmpegInputArgs(contentType, LOCAL_INPUT_PROTOCOLS),
-      '-i', sourcePath,
+      ...ffmpegInputArgs(contentType, protocols),
+      ...(protocols.includes('http') ? RECONNECT_ARGS : []),
+      '-i', source,
       '-vf', `scale=-2:${rung.height}`,
       '-c:v', 'libx264',
-      '-preset', 'medium',
+      '-threads', String(threads),
+      '-preset', 'veryfast',
       '-crf', '21',
       '-maxrate', `${rung.videoKbps}k`,
       '-bufsize', `${rung.videoKbps * 2}k`,
@@ -44,6 +52,7 @@ export class TranscodeService {
       '-level', rung.level,
       '-pix_fmt', 'yuv420p',
       '-force_key_frames', `expr:gte(t,n_forced*${SEGMENT_SECONDS})`,
+      '-sc_threshold', '0',
       ...(hasAudio
         ? ['-c:a', 'aac', '-b:a', `${rung.audioKbps}k`, '-ac', '2', '-ar', '48000']
         : ['-an']),
@@ -72,7 +81,7 @@ export class TranscodeService {
 
         if (last && durationSeconds > 0 && onProgress) {
           const seconds = Number(last[1]) / 1_000_000;
-          onProgress(Math.min(99, Math.round(seconds / durationSeconds) * 100));
+          onProgress(Math.min(99, Math.round((seconds / durationSeconds) * 100)));
         }
       })
 

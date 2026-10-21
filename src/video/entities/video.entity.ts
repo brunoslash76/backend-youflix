@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
 import { VideoStatus } from "../types/video-status.type";
+import { VideoStoryboard } from "../types/video-storyboard.types";
 import { Comment } from "./comments.entity";
 import { Genre } from "./genre.entity";
 import { VideoRendition } from "./video-rendition.entity";
@@ -99,4 +100,7 @@ export class Video {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @Column({ type: 'jsonb', nullable: true }) 
+  storyboard: VideoStoryboard | null
 }

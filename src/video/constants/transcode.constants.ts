@@ -29,6 +29,12 @@ export const ladderFor = (sourceHeight: number): Rung[] => {
   return rungs.length ? rungs : [LADDER[0]]
 }
 
-export const hlsPrefix = (publicId: string) => `videos/${publicId}/hls`;
+export const hlsPrefix = (publicId: string) => `hls/${publicId}`;
 export const renditionPrefix = (publicId: string, name: string) => `${hlsPrefix(publicId)}/${name}`;
 export const masterKey = (publicId: string) => `${hlsPrefix(publicId)}/master.m3u8`; 
+
+export const VIDEO_FLOW = 'video-flow'
+export const SOURCE_URL_TTL_SECONDS = 6 * 60 * 60
+export const storyboardPrefix = (publicId: string) => `${hlsPrefix(publicId)}/storyboard`
+export const storyboardSheetKey = (publicId: string, index: number) =>
+  `${storyboardPrefix(publicId)}/sprite-${String(index + 1).padStart(3, '0')}.jpg`

@@ -45,7 +45,7 @@ export class VideoRendition {
   @Column({ type: 'enum', enum: RenditionStatus, default: RenditionStatus.PENDING })
   status: RenditionStatus;
 
-  @Column({ type: 'text' , nullable: true })
+  @Column({ type: 'text', nullable: true })
   errorMessage: string | null;
 
   @CreateDateColumn()
@@ -53,5 +53,8 @@ export class VideoRendition {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'int', default: 0 })
+  progress: number;
 
 }

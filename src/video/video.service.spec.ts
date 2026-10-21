@@ -1,6 +1,7 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { QUEUES } from './constants/transcode.constants';
 import { Genre } from './entities/genre.entity';
 import { Video } from './entities/video.entity';
 import { StorageService } from './storage.service';
@@ -52,7 +53,7 @@ describe('VideoService', () => {
           },
         },
         {
-          provide: getQueueToken('video-queue'),
+          provide: getQueueToken(QUEUES.ANALYZE),
           useValue: { add: vi.fn() },
         },
       ],

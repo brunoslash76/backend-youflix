@@ -7,6 +7,7 @@ import { In, Repository } from 'typeorm';
 import { config } from '../config';
 import { SearchHistoryService } from '../search-history/search-history.service';
 import { User } from './../user/entities/user.entity';
+import { QUEUES, storyboardSheetKey } from './constants/transcode.constants';
 import { UpdateVideoDetailsDto } from './dtos/update-video-details.dto';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { VideoListResponseDto } from './dtos/video-list.dto';
@@ -15,6 +16,7 @@ import { Video } from './entities/video.entity';
 import { StorageService } from './storage.service';
 import { ThumbnailService } from './thumbnail.service';
 import { VideoStatus } from './types/video-status.type';
+import { processingProgress } from './utils/processing-progress.util';
 
 const ALLOWED_MIME_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/webm']);
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -38,7 +40,7 @@ export class VideoService {
     private readonly videoRepository: Repository<Video>,
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
-    @InjectQueue('video-queue')
+    @InjectQueue(QUEUES.ANALYZE)
     private readonly videoQueue: Queue,
   ) { }
 
@@ -121,13 +123,14 @@ export class VideoService {
       await this.videoRepository.save(video);
 
       await this.videoQueue.add(
-        'process-video',
+        'analyze',
         { publicId: video.publicId },
         {
+          jobId: `analyze-${video.publicId}`,
           attempts: 3,
           backoff: {
             type: 'exponential',
-            delay: 1000,
+            delay: 5000,
           },
           removeOnComplete: true
         }
@@ -149,6 +152,7 @@ export class VideoService {
         relations: {
           genres: true,
           author: true,
+          renditions: true,
         }
       });
 
@@ -167,6 +171,18 @@ export class VideoService {
         genres: video.genres,
         watchUrl: `${config.frontendUrl}/watch?v=${publicId}`,
         thumbnailUrl: this.thumbnailUrl(video, 'large'),
+        processing: processingProgress(video.renditions ?? []),
+        storyboard: video.storyboard
+          ? {
+            ...video.storyboard,
+            sheetUrls: Array.from({ length: video.storyboard.sheetCount }, (_, index) =>
+              this.storageService.getPublicUrl(storyboardSheetKey(video.publicId, index))),
+          }
+          : null,
+        streamUrl: video.hlsMasterKey
+          ? this.storageService.getPublicUrl(video.hlsMasterKey)
+          : null,
+        durationSeconds: video.durationSeconds,
         thumbnailOptions: isOwner
           ? video.thumbnailCandidateKeys.map(key => this.storageService.getPublicUrl(key))
           : [],

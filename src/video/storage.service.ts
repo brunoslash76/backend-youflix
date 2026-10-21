@@ -131,6 +131,10 @@ export class StorageService {
     return `${baseUrl}/${config.aws.s3.bucket}/${key}`;
   }
 
+  getInternalUrl(key: string) {
+    return `${config.aws.s3.endpoint}/${config.aws.s3.bucket}/${key}`;
+  }
+
   async putObject(key: string, body: Buffer, contentType: string, cacheControl?: string) {
     await this.client.send(
       new PutObjectCommand({

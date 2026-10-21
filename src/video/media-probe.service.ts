@@ -5,10 +5,10 @@ import { ffmpegInputArgs, LOCAL_INPUT_PROTOCOLS, type SupportedMimeType } from "
 
 @Injectable()
 export class MediaProbeService {
-  async probe(inputPath: string, contentType: SupportedMimeType): Promise<ProbeResult> {
+  async probe(inputPath: string, contentType: SupportedMimeType, protocols = LOCAL_INPUT_PROTOCOLS): Promise<ProbeResult> {
     const { stdout } = await execFileAsync('ffprobe', [
       '-v', 'error',
-      ...ffmpegInputArgs(contentType, LOCAL_INPUT_PROTOCOLS),
+      ...ffmpegInputArgs(contentType, protocols),
       '-print_format', 'json',
       '-show_format',
       '-show_streams',
