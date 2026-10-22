@@ -23,11 +23,17 @@ export class MediaProbeService {
     if (!video) throw new Error('File contains no video stream')
 
     const [num, den] = String(video.r_frame_rate ?? '0/1').split('/').map(Number);
+    const rotation = Number(
+      video.side_data_list?.find((data: any) => data.rotation !== undefined)?.rotation
+      ?? video.tags?.rotate
+      ?? 0,
+    )
 
+    const rotated = Math.abs(rotation) % 180 === 90
     return {
       durationSeconds: Number(probe.format?.duration ?? 0),
-      width: Number(video.width),
-      height: Number(video.height),
+      width: Number(rotated ? video.height : video.width),
+      height: Number(rotated ? video.width : video.height),
       fps: den ? num / den : num,
       hasAudio: Boolean(probe.streams?.some((s: any) => s.codec_type === 'audio')),
     }
