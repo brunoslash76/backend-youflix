@@ -101,7 +101,7 @@ export class VideoAnalyzeProcessor extends WorkerHost {
 
   private async generateThumbnails(video: Video, inputUrl: string, contentType: SupportedMimeType, duration: number) {
     const offsets = duration > 4
-      ? [0.01, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9].map(p => p * duration)
+      ? [0.01, 0.15, 0.3, 0.45, 0.6, 0.75].map(p => p * duration)
       : [0];
 
     const frames = await this.thumbnailService.extractFrames(inputUrl, contentType, offsets)
