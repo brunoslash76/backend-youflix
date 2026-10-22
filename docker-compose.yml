@@ -125,6 +125,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD:-app_password}@db:5432/${POSTGRES_DB:-app_db}
       TRANSCODE_CONCURRENCY: 2
       TRANSCODE_THREADS: 2
+      MODERATION_CONCURRENCY: 1
     depends_on:
       db:
         condition: service_healthy

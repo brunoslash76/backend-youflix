@@ -6,6 +6,7 @@ import { Repository } from "typeorm";
 import { QUEUES } from "../constants/transcode.constants";
 import { Video } from "../entities/video.entity";
 import { HlsPublisherService } from "../hls-publisher.service";
+import { isBlockedStatus } from "../moderation/util/moderation.policy.util";
 import { StoryboardService } from "../storyboard.service";
 import { FinalizeJobData } from "../types/finalize-job-data.type";
 import { VideoStatus } from "../types/video-status.type";
@@ -26,6 +27,7 @@ export class VideoFinalizeProcessor extends WorkerHost {
   async process(job: Job<FinalizeJobData>) {
     const video = await this.videoRepository.findOneBy({ publicId: job.data.publicId })
     if (!video) throw new UnrecoverableError(`VIDEO NOT FOUND: ${job.data.publicId}`)
+    if (isBlockedStatus(video.moderationStatus)) return
 
     const failures = await job.getIgnoredChildrenFailures()
     if (Object.keys(failures).length) {

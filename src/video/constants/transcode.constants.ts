@@ -1,10 +1,11 @@
 export const SEGMENT_SECONDS = 4;
 
-export const QUEUES = {
+export const QUEUES = Object.freeze({
   ANALYZE: 'video-analyze',
   TRANSCODE: 'video-transcode',
   FINALIZE: 'video-finalize',
-} as const;
+  MODERATE: 'video-moderate',
+});
 
 export interface Rung {
   name: string;

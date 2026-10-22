@@ -1,8 +1,9 @@
-import { InjectFlowProducer, Processor, WorkerHost } from "@nestjs/bullmq";
+import { InjectFlowProducer, InjectQueue, Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
-import { FlowProducer, Job, UnrecoverableError } from 'bullmq';
+import { FlowProducer, Job, Queue, UnrecoverableError } from 'bullmq';
 import { Repository } from 'typeorm';
+import { MODERATION_JOBS } from "../constants/moderation.constant";
 import { ladderFor, QUEUES, renditionPrefix, Rung, VIDEO_FLOW } from "../constants/transcode.constants";
 import { VideoRendition } from '../entities/video-rendition.entity';
 import { Video } from '../entities/video.entity';
@@ -10,6 +11,7 @@ import { StorageService } from "../storage.service";
 import { ThumbnailService } from '../thumbnail.service';
 import { AnalyzeJobData } from '../types/analyze-job-data.type';
 import { FinalizeJobData } from "../types/finalize-job-data.type";
+import { ModerateVideoJobData } from "../types/moderate-job-data.type";
 import { ProbeResult } from "../types/probe-result.type";
 import { RenditionStatus } from "../types/rendition-status.type";
 import { TranscodeJobData } from "../types/transcode-job-data.type";
@@ -39,6 +41,8 @@ export class VideoAnalyzeProcessor extends WorkerHost {
     private readonly videoRenditionRepository: Repository<VideoRendition>,
     @InjectFlowProducer(VIDEO_FLOW)
     private readonly flowProducer: FlowProducer,
+    @InjectQueue(QUEUES.MODERATE)
+    private readonly moderationQueue: Queue,
   ) {
     super()
   }
@@ -78,14 +82,18 @@ export class VideoAnalyzeProcessor extends WorkerHost {
       await this.videoRepository.update(video.id, { status: VideoStatus.TRANSCODING })
       await this.enqueueFlow(video, rungs, probe.hasAudio)
 
+      if (!job.data.skipModeration) await this.enqueueModeration(video, probe.hasAudio)
+
       this.logger.log(`Analyzed ${video.publicId}: ${rungs.map(r => r.name).join(', ')}`);
     } catch (error) {
-      if(!video) {
+      if (!video) {
         throw new UnrecoverableError(`Video not found: ${job.data.publicId}`)
       }
+
       if (job.attemptsMade + 1 >= (job.opts.attempts ?? 1)) {
         await this.videoRepository.update(video!.id, { status: VideoStatus.FAILED });
       }
+
       this.logger.error(`Analyze failed: ${video?.publicId}`, error);
       throw error;
     }
@@ -174,6 +182,15 @@ export class VideoAnalyzeProcessor extends WorkerHost {
           }
         }
       })
+    })
+  }
+
+  private async enqueueModeration(video: Video, hasAudio: boolean) {
+    const data: ModerateVideoJobData = { publicId: video.publicId, hasAudio }
+    await this.moderationQueue.add(MODERATION_JOBS.VIDEO, data, {
+      ...RETRY,
+      jobId: `moderate-video-${video.publicId}`,
+      removeOnComplete: true,
     })
   }
 }

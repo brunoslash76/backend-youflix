@@ -1,4 +1,13 @@
-import { CreateMultipartUploadCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, UploadPartCommand } from "@aws-sdk/client-s3";
+import {
+  CreateMultipartUploadCommand,
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+  UploadPartCommand
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { createWriteStream } from "fs";
@@ -133,6 +142,31 @@ export class StorageService {
 
   getInternalUrl(key: string) {
     return `${config.aws.s3.endpoint}/${config.aws.s3.bucket}/${key}`;
+  }
+
+  async deletePrefix(prefix: string) {
+    let continuationToken: string | undefined
+
+    do {
+      const v2Command = new ListObjectsV2Command({
+        Bucket: config.aws.s3.bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      })
+      const page = await this.client.send(v2Command)
+      const objects = (page.Contents ?? []).flatMap(object => (object.Key ? [{ Key: object.Key }] : []))
+
+      if (objects.length) {
+        const deleteObjectsCommand = new DeleteObjectsCommand({
+          Bucket: config.aws.s3.bucket,
+          Delete: { Objects: objects, Quiet: true }
+        })
+
+        await this.client.send(deleteObjectsCommand)
+      }
+      continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined
+    } while(continuationToken)
+
   }
 
   async putObject(key: string, body: Buffer, contentType: string, cacheControl?: string) {

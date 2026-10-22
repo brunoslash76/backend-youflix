@@ -11,9 +11,8 @@ export const isSupportedMimeType = (value: string): value is SupportedMimeType =
 
 
 export const REMOTE_INPUT_PROTOCOLS = 'http,https,tcp,tls'
-
 export const LOCAL_INPUT_PROTOCOLS = 'file'
-
+export const RECONNECT_ARGS = ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5']
 
 export const ffmpegInputArgs = (contentType: SupportedMimeType, protocols: string): string[] =>
   ['-f', DEMUXER_BY_MIME[contentType], '-protocol_whitelist', protocols]

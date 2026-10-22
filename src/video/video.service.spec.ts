@@ -56,6 +56,10 @@ describe('VideoService', () => {
           provide: getQueueToken(QUEUES.ANALYZE),
           useValue: { add: vi.fn() },
         },
+        {
+          provide: getQueueToken(QUEUES.MODERATE),
+          useValue: { add: vi.fn() },
+        },
       ],
     }).compile();
 

@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { Rung, SEGMENT_SECONDS } from "./constants/transcode.constants";
-import { ffmpegInputArgs, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
+import { ffmpegInputArgs, RECONNECT_ARGS, SupportedMimeType } from "./utils/ffmpeg-input-args.util";
 
 interface TranscodeRenditionOptions {
   contentType: SupportedMimeType;
@@ -17,7 +17,6 @@ interface TranscodeRenditionOptions {
   onProgress?: (pct: number) => void;
 }
 
-const RECONNECT_ARGS = ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5'];
 
 @Injectable()
 export class TranscodeService {

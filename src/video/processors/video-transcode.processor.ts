@@ -7,6 +7,7 @@ import { LADDER, QUEUES, renditionPrefix, SOURCE_URL_TTL_SECONDS } from "../cons
 import { VideoRendition } from "../entities/video-rendition.entity";
 import { Video } from "../entities/video.entity";
 import { HlsPublisherService } from "../hls-publisher.service";
+import { isBlockedStatus } from "../moderation/util/moderation.policy.util";
 import { SourceFileService } from "../source-file.service";
 import { StorageService } from "../storage.service";
 import { TranscodeService } from "../transcode.service";
@@ -44,6 +45,7 @@ export class VideoTranscodeProcessor extends WorkerHost {
     const video = await this.videoRepository.findOneBy({ publicId })
 
     if (!video) throw new UnrecoverableError(`Video not found: ${publicId}`)
+    if (isBlockedStatus(video.moderationStatus)) return { rung: rung.name, skipped: true }
 
     const rendition = await this.videoRenditionRepository.findOneBy({ videoId: video.id, name: rung.name })
     if (!rendition) throw new UnrecoverableError(`Rendition not found: ${publicId} ${rung.name}`)
@@ -81,13 +83,23 @@ export class VideoTranscodeProcessor extends WorkerHost {
         });
 
         const bytes = await this.storageService.uploadDirectory(dir, renditionPrefix(publicId, rung.name))
+
         await this.videoRenditionRepository.update(rendition.id, {
           status: RenditionStatus.READY,
           progress: 100,
           bytes,
         });
       });
+
+      const current = await this.videoRepository.findOneBy({ id: video.id })
+
+      if (current && isBlockedStatus(current.moderationStatus)) {
+        await this.storageService.deletePrefix(`${renditionPrefix(publicId, rung.name)}/`)
+        return { rung: rung.name, skipped: true }
+      }
+
       await this.hlsPublisherService.publish(video, hasAudio)
+
       this.logger.log(`Rendition ready: ${publicId} ${rung.name}`)
     } catch (error) {
       const lastAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);

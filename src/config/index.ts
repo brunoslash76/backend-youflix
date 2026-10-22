@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common"
 
-export interface CONFIG  {
+export interface CONFIG {
   database: {
     url: string | undefined
     user: string | undefined
@@ -40,8 +40,13 @@ export interface CONFIG  {
       bucket: string | undefined
       cdnUrl: string | undefined
     }
+  },
+  openrouter: {
+    apiKey: string | undefined
+    baseUrl: string
+    moderationModels: string[]
   }
-} 
+}
 
 const checkEnvVarAvailability = (name: string) => {
   const value = process.env[name];
@@ -89,5 +94,13 @@ export const config: CONFIG = {
       bucket: checkEnvVarAvailability('AWS_S3_BUCKET'),
       cdnUrl: process.env.AWS_S3_CDN_URL,
     }
-  }
+  },
+  openrouter: {
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseUrl: process.env.OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1',
+    moderationModels: (process.env.MODERATION_MODELS ?? 'google/gemini-2.5-flash')
+      .split(',')
+      .map(model => model.trim())
+      .filter(Boolean),
+  },
 }

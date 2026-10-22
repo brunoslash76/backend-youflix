@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../user/entities/user.entity";
+import { ModerationStatus } from "../types/moderation-status.type";
 import { VideoStatus } from "../types/video-status.type";
 import { VideoStoryboard } from "../types/video-storyboard.types";
 import { Comment } from "./comments.entity";
@@ -101,6 +102,15 @@ export class Video {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @Column({ type: 'jsonb', nullable: true }) 
+  @Column({ type: 'jsonb', nullable: true })
   storyboard: VideoStoryboard | null
+
+  @Column({ type: 'enum', enum: ModerationStatus, enumName: 'moderation_status_enum', default: ModerationStatus.PENDING })
+  moderationStatus: ModerationStatus
+
+  @Column({ type: 'text', nullable: true })
+  moderationReason: string | null
+
+  @Column({ type: 'timestamptz', nullable: true })
+  moderatedAt: Date | null
 }

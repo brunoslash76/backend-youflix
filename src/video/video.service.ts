@@ -7,6 +7,7 @@ import { In, Repository } from 'typeorm';
 import { config } from '../config';
 import { SearchHistoryService } from '../search-history/search-history.service';
 import { User } from './../user/entities/user.entity';
+import { MODERATION_JOBS } from './constants/moderation.constant';
 import { QUEUES, storyboardSheetKey } from './constants/transcode.constants';
 import { UpdateVideoDetailsDto } from './dtos/update-video-details.dto';
 import { UploadVideoDto } from './dtos/upload-video.dto';
@@ -15,6 +16,8 @@ import { Genre } from './entities/genre.entity';
 import { Video } from './entities/video.entity';
 import { StorageService } from './storage.service';
 import { ThumbnailService } from './thumbnail.service';
+import { ModerateTextJobData } from './types/moderate-job-data.type';
+import { ModerationStatus } from './types/moderation-status.type';
 import { VideoStatus } from './types/video-status.type';
 import { processingProgress } from './utils/processing-progress.util';
 
@@ -28,6 +31,8 @@ const THUMBNAIL_WIDTHS: Record<ThumbnailSize, number> = {
   large: 1280,
 }
 const THUMBNAIL_SIZES = Object.freeze(['small', 'medium', 'large'])
+const PUBLISHED = { isPublic: true, status: VideoStatus.READY, moderationStatus: ModerationStatus.APPROVED }
+
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
@@ -42,6 +47,8 @@ export class VideoService {
     private readonly genreRepository: Repository<Genre>,
     @InjectQueue(QUEUES.ANALYZE)
     private readonly videoQueue: Queue,
+    @InjectQueue(QUEUES.MODERATE)
+    private readonly moderationQueue: Queue,
   ) { }
 
   async createThumbnailUpload(user: User, publicId: string, contentType: string, sizeBytes: number) {
@@ -159,8 +166,10 @@ export class VideoService {
       if (!video) throw new NotFoundException('Video not found');
 
       const isOwner = user?.id === video.authorId;
+      const canSeeUnpublished = isOwner || Boolean(user?.isAdmin);
+      const published = video.isPublic && video.moderationStatus === ModerationStatus.APPROVED;
 
-      if (!video.isPublic && !isOwner) throw new NotFoundException('Video not found');
+      if (!published && !canSeeUnpublished) throw new NotFoundException('Video not found');
 
       return {
         publicId: video.publicId,
@@ -178,6 +187,10 @@ export class VideoService {
             sheetUrls: Array.from({ length: video.storyboard.sheetCount }, (_, index) =>
               this.storageService.getPublicUrl(storyboardSheetKey(video.publicId, index))),
           }
+          : null,
+
+        moderation: canSeeUnpublished
+          ? { status: video.moderationStatus, reason: video.moderationReason }
           : null,
         streamUrl: video.hlsMasterKey
           ? this.storageService.getPublicUrl(video.hlsMasterKey)
@@ -200,7 +213,7 @@ export class VideoService {
   async listVideos(user?: User, page = 1, limit = 20): Promise<VideoListResponseDto> {
     try {
       const [videos, total] = await this.videoRepository.findAndCount({
-        where: { isPublic: true, status: VideoStatus.READY },
+        where: PUBLISHED,
         relations: {
           genres: true,
           author: true,
@@ -223,12 +236,12 @@ export class VideoService {
   async getFeed(user?: User, page = 1, limit = 20): Promise<VideoListResponseDto> {
     try {
       const total = await this.videoRepository.count({
-        where: { isPublic: true, status: VideoStatus.READY },
+        where: PUBLISHED,
       });
 
       if (page > 1) {
         const videos = await this.videoRepository.find({
-          where: { isPublic: true, status: VideoStatus.READY },
+          where: PUBLISHED,
           relations: { genres: true, author: true },
           order: { createdAt: 'DESC' },
           skip: (page - 1) * limit,
@@ -247,9 +260,10 @@ export class VideoService {
       const terms = user ? await this.searchHistoryService.findRecent(user.id) : []
       const recommended = terms.length
         ? await this.videoRepository.createQueryBuilder('video')
+          .where('video.isPublic = true AND video.status = :status', { status: VideoStatus.READY })
+          .andWhere('video.moderationStatus = :moderation', { moderation: ModerationStatus.APPROVED })
           .leftJoinAndSelect('video.genres', 'genre')
           .leftJoinAndSelect('video.author', 'author')
-          .where('video.isPublic = true AND video.status = :status', { status: VideoStatus.READY })
           .andWhere('video.title ILIKE ANY(ARRAY[:...patterns])', { patterns: terms.map(t => `%${t.replace(/[\\%_]/g, '\\$&')}%`) })
           .orderBy('video.createdAt', 'DESC')
           .take(limit)
@@ -258,7 +272,7 @@ export class VideoService {
 
       const recommendedIds = new Set(recommended.map(v => v.id))
       const latest = await this.videoRepository.find({
-        where: { isPublic: true, status: VideoStatus.READY },
+        where: PUBLISHED,
         relations: { genres: true, author: true },
         order: { createdAt: 'DESC' },
         take: limit + recommended.length,
@@ -310,6 +324,14 @@ export class VideoService {
 
       Object.assign(video, { title, description, genres, isPublic: true })
       await this.videoRepository.save(video)
+
+      const textJob: ModerateTextJobData = { publicId }
+      await this.moderationQueue.add(MODERATION_JOBS.TEXT, textJob, {
+        jobId: `moderate-text-${publicId}-${Date.now()}`,
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: true,
+      })
       return this.findByPublicId(publicId, user)
     } catch (error) {
       this.rethrowHttp(error, 'Failed to update video details');
